@@ -1,8 +1,10 @@
 import parser as ps
-import sre_constants as cte
 import os
 import socket
+import time
 
+CHUNK_SIZE = 1024
+BUFFER_SIZE = 1024
 
 
 def verify_params(args):
@@ -19,16 +21,21 @@ def upload_file(socket, path, name):
         with open(path, 'rb') as file:
             file_size = os.path.getsize(path)
             socket.send(f'UPLOAD {name} {file_size}'.encode()) # TODO check on server side if another file has the same name, also check if the file doesn't has more than the max size
+            print(f'Uploading {name} ({file_size} bytes)')
 
-            response = socket.recv(cte.BUFFER_SIZE).decode()
+            response = socket.recv(BUFFER_SIZE).decode()
             if response != 'OK':
                 print(f'Error: {response}')
                 return
-            
-            for chunk in iter(lambda: file.read(cte.CHUNK_SIZE), b''):
+            print('Server ready to receive file')
+
+            for chunk in iter(lambda: file.read(CHUNK_SIZE), b''):
+                input('Press enter to send the next chunk')
                 socket.send(chunk)
+            print('File sent')
 
             socket.send(b'UPLOAD EOF')
+            print('EOF sent')
 
     except FileNotFoundError:
         print(f'File not found: {path}')
