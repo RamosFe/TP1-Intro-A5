@@ -5,10 +5,10 @@ import socket
 def verify_params(args):
     if not args.host or not args.port:
         return False
-    if args.command == 'upload' and (not args.src or not args.name):
-        return False
-    if args.command == 'download' and (not args.dst or not args.name):
-        return False
+    # if args.command == 'upload' and (not args.src or not args.name):
+    #     return False
+    # if args.command == 'download' and (not args.dst or not args.name):
+    #     return False
     return True
 
 def main():
@@ -25,7 +25,7 @@ def main():
     # elif args.command == 'download':
     #     print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')
 
-    address = (f"{args.host}:{args.port}")
+    address = (args.host, args.port)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     try:
@@ -54,4 +54,10 @@ def main():
     # close the socket
     client_socket.close()
 
-main()
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nClient stopped by the user")
+        print("Bye! See you next time ;)")
+        exit(0)

@@ -25,8 +25,8 @@ def parse_arguments():
 
     args = parser.parse_args()
 
-    if args.help:
-        parser.print_help()
-        quit()
+    # if args.help:
+    #     parser.print_help()
+    #     quit()
 
     return args
