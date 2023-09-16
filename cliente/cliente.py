@@ -12,29 +12,35 @@ help_command_source = "help_command.txt"
 
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description='<command description>')
+    parser = argparse.ArgumentParser(description='<command description>', add_help=False)
     subparsers = parser.add_subparsers(dest='command')
 
     upload_parser = subparsers.add_parser('upload')
-
-    upload_parser.add_argument('-h', '--help', action='help', help='show this help message and exit')
     upload_parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
     upload_parser.add_argument('-q', '--quiet', action='store_true', help='decrease output verbosity')
-    upload_parser.add_argument('-H', '--host', type=str, help='server IP address')
+    upload_parser.add_argument('-H', '--help', action='store_true', help='show this help message and exit')
+    upload_parser.add_argument('--host', type=str, help='server IP address')
     upload_parser.add_argument('-p', '--port', type=int, help='server port')
-    upload_parser.add_argument('-s', '--src', type=str, help='source file path')
+    upload_parser.add_argument('--src', type=str, help='source file path')
     upload_parser.add_argument('-n', '--name', type=str, help='file name')
 
     download_parser = subparsers.add_parser('download')
-    download_parser.add_argument('-h', '--help', action='help', help='show this help message and exit')
     download_parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
     download_parser.add_argument('-q', '--quiet', action='store_true', help='decrease output verbosity')
-    download_parser.add_argument('-H', '--host', type=str, help='server IP address')
+    download_parser.add_argument('-H', '--help', action='store_true', help='show this help message and exit')
+    download_parser.add_argument('--host', type=str, help='server IP address')
     download_parser.add_argument('-p', '--port', type=int, help='server port')
-    download_parser.add_argument('-d', '--dst', type=str, help='destination file path')
+    download_parser.add_argument('--dst', type=str, help='destination file path')
     download_parser.add_argument('-n', '--name', type=str, help='file name')
 
+    parser.add_argument('-h', '--help', action='help', help='show this help message and exit')
+
     args = parser.parse_args()
+
+    if args.help:
+        parser.print_help()
+        quit()
+
     return args
 
 
