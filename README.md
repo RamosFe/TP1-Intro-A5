@@ -6,5 +6,5 @@ TP 1 de Introducción a Sistemas Distribuidos - Grupo A5
 - [106010 - Federico Martín Valsagna Indri](https://github.com/FedericoValsagna)
 - [107205 - Eliana Harriet](https://github.com/ElianaHarriet)
 - [108026 - Tomas Emanuel](https://github.com/tomasemanuel)
-- [Padrón - Integrante](url)
+- [108193 - Tomás González](https://github.com/tomasgonzz)
 - [Padrón - Integrante](url)
