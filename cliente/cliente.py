@@ -1,15 +1,55 @@
 import parser as ps
-
+import sre_constants as cte
+import os
 import socket
+
+
 
 def verify_params(args):
     if not args.host or not args.port:
         return False
-    # if args.command == 'upload' and (not args.src or not args.name):
-    #     return False
-    # if args.command == 'download' and (not args.dst or not args.name):
-    #     return False
+    if args.command == 'upload' and (not args.src or not args.name):
+        return False
+    if args.command == 'download' and (not args.dst or not args.name):
+        return False
     return True
+
+def upload_file(socket, path, name):
+    try:
+        with open(path, 'rb') as file:
+            file_size = os.path.getsize(path)
+            socket.send(f'UPLOAD {name} {file_size}'.encode()) # TODO check on server side if another file has the same name, also check if the file doesn't has more than the max size
+
+            response = socket.recv(cte.BUFFER_SIZE).decode()
+            if response != 'OK':
+                print(f'Error: {response}')
+                return
+            
+            for chunk in iter(lambda: file.read(cte.CHUNK_SIZE), b''):
+                socket.send(chunk)
+
+            socket.send(b'UPLOAD EOF')
+
+    except FileNotFoundError:
+        print(f'File not found: {path}')
+        return
+    except Exception as e: # TODO specify exception and handle it
+        print(f'Error: {e}')
+        return
+
+# def download_file(socket, path, name):
+
+#     try :
+#         socket.send(f'DOWNLOAD {name}'.encode())
+#         response = socket.recv(cte.BUFFER_SIZE).decode()
+#         # TODO Chequear el file size/ error posible que nos podrian tirar
+        
+
+
+#     except Exception as e:
+#         print(f"Error: {e}")
+#         return 
+#     #servidor filesize
 
 def main():
     args = ps.parse_arguments()
@@ -19,11 +59,6 @@ def main():
         ps.parse_arguments().print_help()
         return
     
-    # if args.command == 'upload':
-    #     print(f'Uploading {args.src} to {args.host}:{args.port} with name {args.name}')
-        
-    # elif args.command == 'download':
-    #     print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')
 
     address = (args.host, args.port)
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -43,16 +78,18 @@ def main():
         print(f'Error: {e}')
         return
 
-    # send data to the server
-    message = 'Hello, server!'
-    client_socket.sendall(message.encode())
-    
-    # receive data from the server
-    data = client_socket.recv(1024)
-    print(f'Received data: {data.decode()}')
 
-    # close the socket
+
+    if args.command == 'upload':
+        print(f'Uploading {args.src} to {args.host}:{args.port} as {args.name}')
+        upload_file(client_socket, args.src, args.name)
+        
+    elif args.command == 'download':
+        print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')
+    
     client_socket.close()
+
+
 
 if __name__ == '__main__':
     try:
