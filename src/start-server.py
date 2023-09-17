@@ -7,9 +7,10 @@ from src.lib.constants import CHUNK_SIZE
 
 HARDCODED_HOST = '127.0.0.1'
 HARDCODED_PORT = 6000
+HARDCODED_MOUNT_PATH = './'
 
 
-def main(host: str, port: int, max_chunk_size: int):
+def main(host: str, port: int, max_chunk_size: int, mount_path: str):
     exit_signal_event = Event()
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -23,7 +24,7 @@ def main(host: str, port: int, max_chunk_size: int):
     while True:
         try:
             conn, addr = server_socket.accept()
-            new_client = Thread(target=download, args=(conn, addr, max_chunk_size, exit_signal_event))
+            new_client = Thread(target=download, args=(conn, addr, max_chunk_size, mount_path ,exit_signal_event))
             clients.append(new_client)
             new_client.start()
         except KeyboardInterrupt:
@@ -37,4 +38,4 @@ def main(host: str, port: int, max_chunk_size: int):
 
 
 if __name__ == '__main__':
-    main(HARDCODED_HOST, HARDCODED_PORT, CHUNK_SIZE)
+    main(HARDCODED_HOST, HARDCODED_PORT, CHUNK_SIZE, HARDCODED_MOUNT_PATH)

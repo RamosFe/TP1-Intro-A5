@@ -1,6 +1,6 @@
-from src.lib.constants import BUFFER_SIZE, CHUNK_SIZE
+from src.lib.constants import BUFFER_SIZE, CHUNK_SIZE, UPLOAD_FINISH_MSG
 from src.lib.fs_handler import FileSystemUploader
-from src.lib.command_parser import Command, ClientOption
+from src.lib.command_parser import Command, ClientOption, CommandResponse
 
 
 def upload_file(socket, path, name):
@@ -13,11 +13,12 @@ def upload_file(socket, path, name):
     print(f'Uploading {name} ({file_size} bytes)')
 
     response = socket.recv(BUFFER_SIZE).decode()
-    if response != 'OK':
-        print(f'Error: {response}')
+    command = CommandResponse(response)
+    if command.is_error():
+        print(f'Error: {command.to_str()}')
         return
     print('Server ready to receive file')
 
     fs_handler.upload_file(socket, path)
-    socket.send(b'UPLOAD EOF')
+    socket.send(UPLOAD_FINISH_MSG)
     print('EOF sent')

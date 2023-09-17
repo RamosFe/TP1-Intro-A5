@@ -22,3 +22,22 @@ class Command:
         name = parts[1]
         size = int(parts[2])
         return Command(option, name, size)
+
+
+class CommandResponse:
+    def __init__(self, msg: str):
+        self._msg = msg
+
+    def is_error(self) -> bool:
+        return self._msg != 'OK'
+
+    def to_str(self) -> str:
+        return self._msg
+
+    @staticmethod
+    def ok_response():
+        return CommandResponse('OK')
+
+    @staticmethod
+    def err_response(msg: str):
+        return CommandResponse(msg)
