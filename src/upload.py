@@ -2,8 +2,8 @@
 
 import socket
 
-from src.lib import parser as ps
-from src.lib.upload import upload_file
+from src.lib import cli_parser as ps
+from src.lib.controllers.upload import upload_file
 
 
 def verify_params(args):

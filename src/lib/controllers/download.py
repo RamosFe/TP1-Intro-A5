@@ -1,9 +1,8 @@
 import socket
 from threading import Event
 
-from src.lib.constants import UPLOAD_FINISH_MSG
-from src.lib.command_parser import Command, CommandResponse
-from src.lib.fs_handler import FileSystemDownloader
+from src.lib.messages.commands import Command, CommandResponse
+from src.lib.fs.fs_downloader import FileSystemDownloader
 
 
 def download(connection: socket.socket, addr: str, max_chunk_size: int, mount_path: str, exit_signal: Event):

@@ -1,6 +1,6 @@
 from src.lib.constants import BUFFER_SIZE, CHUNK_SIZE, UPLOAD_FINISH_MSG
-from src.lib.fs_handler import FileSystemUploader
-from src.lib.command_parser import Command, ClientOption, CommandResponse
+from src.lib.fs.fs_uploader import FileSystemUploader
+from src.lib.messages.commands import Command, ClientOption, CommandResponse
 
 
 def upload_file(socket, path, name):
