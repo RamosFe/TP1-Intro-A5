@@ -18,6 +18,6 @@ make server
 
 Para correr el cliente (modo upload)  
 ```bash
-make client-upload f=<path del archivo> n=<nombre del archivo>
+make client-upload p=<path del archivo> n=<nombre del archivo>
 ```
 Por ejemplo: `make client-upload p="README.md" n="test"`
