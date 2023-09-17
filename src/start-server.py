@@ -23,7 +23,7 @@ def main(host: str, port: int, max_chunk_size: int):
     while True:
         try:
             conn, addr = server_socket.accept()
-            new_client = Thread(target=download, args=(conn, addr, CHUNK_SIZE, exit_signal_event))
+            new_client = Thread(target=download, args=(conn, addr, max_chunk_size, exit_signal_event))
             clients.append(new_client)
             new_client.start()
         except KeyboardInterrupt:
