@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import os
 import socket
+
 from src.lib import parser as ps
-from lib.constants import BUFFER_SIZE, CHUNK_SIZE
+from src.lib.upload import upload_file
 
 
 def verify_params(args):
@@ -15,49 +15,6 @@ def verify_params(args):
         return False
     return True
 
-
-def upload_file(socket, path, name):
-    try:
-        with open(path, 'rb') as file:
-            file_size = os.path.getsize(path)
-            socket.send(
-                f'UPLOAD {name} {file_size}'.encode())  # TODO check on server side if another file has the same name, also check if the file doesn't has more than the max size
-            print(f'Uploading {name} ({file_size} bytes)')
-
-            response = socket.recv(BUFFER_SIZE).decode()
-            if response != 'OK':
-                print(f'Error: {response}')
-                return
-            print('Server ready to receive file')
-
-            for chunk in iter(lambda: file.read(CHUNK_SIZE), b''):
-                # input('Press enter to send the next chunk')
-                socket.send(chunk)
-            print('File sent')
-
-            socket.send(b'UPLOAD EOF')
-            print('EOF sent')
-
-    except FileNotFoundError:
-        print(f'File not found: {path}')
-        return
-    except Exception as e:  # TODO specify exception and handle it
-        print(f'Error: {e}')
-        return
-
-
-# def download_file(socket, path, name):
-
-#     try :
-#         socket.send(f'DOWNLOAD {name}'.encode())
-#         response = socket.recv(cte.BUFFER_SIZE).decode()
-#         # TODO Chequear el file size/ error posible que nos podrian tirar
-
-
-#     except Exception as e:
-#         print(f"Error: {e}")
-#         return
-#     #servidor filesize
 
 def main():
     args = ps.parse_arguments()
