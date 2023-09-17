@@ -1,11 +1,10 @@
-import parser as ps
+#!/usr/bin/env python3
+
 import os
 import socket
 import time
-
-CHUNK_SIZE = 1024
-BUFFER_SIZE = 1024
-
+from . import parser as ps
+from lib.constants import BUFFER_SIZE, CHUNK_SIZE
 
 def verify_params(args):
     if not args.host or not args.port:
@@ -30,7 +29,7 @@ def upload_file(socket, path, name):
             print('Server ready to receive file')
 
             for chunk in iter(lambda: file.read(CHUNK_SIZE), b''):
-                input('Press enter to send the next chunk')
+                # input('Press enter to send the next chunk')
                 socket.send(chunk)
             print('File sent')
 

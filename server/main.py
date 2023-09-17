@@ -1,12 +1,11 @@
+#!/usr/bin/env python3
 import socket
 from threading import Thread, Event
-
 from typing import List
-CHUNK_SIZE = 1024
-BUFFER_SIZE = 1024
+from lib.constants import BUFFER_SIZE, CHUNK_SIZE
 
 HARDCODED_HOST = '127.0.0.1'
-HARDCODED_PORT = 6004
+HARDCODED_PORT = 6000
 HARDCODED_MAX_SIZE = 1024
 
 exit_signal = Event()

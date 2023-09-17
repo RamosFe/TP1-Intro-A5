@@ -8,3 +8,16 @@ TP 1 de Introducción a Sistemas Distribuidos - Grupo A5
 - [108026 - Tomas Emanuel](https://github.com/tomasemanuel)
 - [108193 - Tomás González](https://github.com/tomasgonzz)
 - [Padrón - Integrante](url)
+
+## Instrucciones de uso
+
+Para correr el server  
+```bash
+make server
+```
+
+Para correr el cliente (modo upload)  
+```bash
+make client-upload f=<path del archivo> n=<nombre del archivo>
+```
+Por ejemplo: `make client-upload p="README.md" n="test"`
