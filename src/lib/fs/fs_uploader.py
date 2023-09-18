@@ -1,6 +1,8 @@
 import os
 import socket
-
+from alive_progress import alive_bar
+import time
+from math import ceil
 
 class FileSystemUploader:
     def __init__(self, chunk_size: int):
@@ -18,16 +20,28 @@ class FileSystemUploader:
             print(f'Error: {e}')
             raise e
 
-    def upload_file(self, socket: socket.socket, path: str):
+    def upload_file(self, socket: socket.socket, path: str, name: str, verbose: bool, server: bool):
         try:
             with open(path, 'rb') as file:
-                for chunk in iter(lambda: file.read(self._chunk_size), b''):
-                    socket.send(chunk)
-                print('File sent')
-        # TODO Handle error nicely
+                steps = ceil(os.path.getsize(path) / self._chunk_size)
+                calibration = '{percentage:.2f}%' # not verbose
+                if verbose:
+                    calibration = '{step}/{steps} ({percentage:.2f}%, {elapsed}s elapsed)' # verbose
+                    print(f"Uploading file {name}")
+                
+                with alive_bar(steps, bar='bubbles', title=f'↑ {name}') as bar:
+                    for chunk in iter(lambda: file.read(self._chunk_size), b''):
+                        socket.send(chunk)
+                        bar()
+                
+                bar.text('✔ Done ✔')
+
+                if verbose:
+                    print(f"File {name} uploaded successfully")
+        
         except FileNotFoundError as e:
             print(f"File not found {path}")
             raise e
-        except Exception as e:
+        except Exception as e: # TODO Handle error nicely
             print(f'Error: {e}')
             raise e

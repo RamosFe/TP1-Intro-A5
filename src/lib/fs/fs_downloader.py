@@ -6,7 +6,9 @@ from src.lib.constants import UPLOAD_FINISH_MSG
 
 
 class FileSystemDownloader:
-    def __init__(self, mount_path: str, chunk_size: int):
+    def __init__(self, mount_path: str, chunk_size: int):        
+        if not os.path.exists(mount_path):
+            os.makedirs(mount_path)
         self._mount_path = mount_path
         self._chunk_size = chunk_size
 
@@ -21,5 +23,5 @@ class FileSystemDownloader:
                 if data == UPLOAD_FINISH_MSG:
                     break
 
-                print(data)
+                print(data.decode())
                 file.write(data)

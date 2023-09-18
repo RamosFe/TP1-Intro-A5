@@ -1,13 +1,13 @@
 from enum import Enum
 
 
-class ClientOption(Enum):
+class MessageOption(Enum):
     UPLOAD = 'UPLOAD'
     DOWNLOAD = 'DOWNLOAD'
 
 
 class Command:
-    def __init__(self, option: ClientOption, name: str, size: int):
+    def __init__(self, option: MessageOption, name: str, size: int):
         self.option = option
         self.name = name
         self.size = size
@@ -17,10 +17,15 @@ class Command:
 
     @staticmethod
     def from_str(msg: str):
+        
+        print(f"msg:{msg}")
         parts = msg.split(':')
-        option = ClientOption(parts[0])
+        option = MessageOption(parts[0])
         name = parts[1]
-        size = int(parts[2])
+        size = None   
+        if option == MessageOption.UPLOAD:
+            size = int(parts[2])
+            print(size)
         return Command(option, name, size)
 
 

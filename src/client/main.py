@@ -2,7 +2,7 @@
 
 import socket
 
-from src.lib import cli_parser as ps
+from src.client import parser as ps
 from src.lib.controllers.upload import upload_file
 
 
@@ -42,14 +42,18 @@ def main():
         print(f'Error: {e}')
         return
 
+    if args.verbose:
+        print(f'Successfully connected to {args.host}:{args.port}')
+
     if args.command == 'upload':
         print(f'Uploading {args.src} to {args.host}:{args.port} as {args.name}')
-        upload_file(client_socket, args.src, args.name)
+        upload_file(client_socket, args.src, args.name, args.verbose, False)
 
     elif args.command == 'download':
-        print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')
+        print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')  ## TODO 
 
     client_socket.close()
+    print("Bye! See you next time ;)")
 
 
 if __name__ == '__main__':
