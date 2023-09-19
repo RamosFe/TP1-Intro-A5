@@ -4,6 +4,7 @@ from enum import Enum
 class MessageOption(Enum):
     UPLOAD = 'UPLOAD'
     DOWNLOAD = 'DOWNLOAD'
+    LIST_FILES = 'LS'
 
 
 class Command:
@@ -21,6 +22,8 @@ class Command:
         print(f"msg:{msg}")
         parts = msg.split(':')
         option = MessageOption(parts[0])
+        if option == MessageOption.LIST_FILES:
+            return Command(option,None,None)
         name = parts[1]
         size = None   
         if option == MessageOption.UPLOAD:
