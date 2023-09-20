@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import socket
+from threading import Event
 
 from src.client import parser as ps
 from src.lib.controllers.upload import upload_file
+from src.lib.controllers.list_files import list_files_client
 
 
 def verify_params(args):
@@ -44,13 +46,28 @@ def main():
 
     if args.verbose:
         print(f'Successfully connected to {args.host}:{args.port}')
+    exit_signal = Event()
+    match args.command:
+        case 'upload':
+            print(f"Listing files available on server")
+            list_files_client(client_socket)
+            
+        case 'download':
+            print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')  ## TODO 
+        case "ls":
+            print(f"Listing files available on server")
+            list_files_client(client_socket,exit_signal)
+        
 
-    if args.command == 'upload':
-        print(f'Uploading {args.src} to {args.host}:{args.port} as {args.name}')
-        upload_file(client_socket, args.src, args.name, args.verbose, False)
+    # if args.command == 'upload':
+    #     print(f'Uploading {args.src} to {args.host}:{args.port} as {args.name}')
+    #     upload_file(client_socket, args.src, args.name, args.verbose, False)
 
-    elif args.command == 'download':
-        print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')  ## TODO 
+    # elif args.command == 'download':
+    #     print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')  ## TODO 
+    # elif args.command == "ls":
+    #     print(f"Listing files available on server")
+    #     list_files_client(client_socket)
 
     client_socket.close()
     print("Bye! See you next time ;)")
