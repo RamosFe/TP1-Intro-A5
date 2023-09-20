@@ -19,6 +19,9 @@ class FileSystemUploader:
         except Exception as e:
             print(f'Error: {e}')
             raise e
+        
+    def is_file(file_path):
+        return os.path.exists(file_path) and os.path.isfile(file_path)
 
     def upload_file(self, socket: socket.socket, path: str, name: str, verbose: bool, server: bool):
         try:

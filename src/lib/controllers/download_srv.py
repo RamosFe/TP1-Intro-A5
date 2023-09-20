@@ -18,12 +18,12 @@ def download_file(connection: socket.socket, addr: str, max_chunk_size: int, mou
         
         fs_handler = FileSystemDownloader(mount_path, max_chunk_size)
         if fs_handler.file_exists(filename=comm.name):
-            response = CommandResponse.err_response(f'file {comm.name} already exists').to_str()
+            response = CommandResponse.err_response(f'ERR file {comm.name} already exists').to_str()
             connection.sendall(response.encode())
         else:
             response = CommandResponse.ok_response().to_str()
             connection.sendall(response.encode())
-            fs_handler.download_file(connection, comm.name, exit_signal)
+            fs_handler.download_file(connection, comm.name, exit_signal, 0) # TODO change size
         print(f"Closing {addr}")
         connection.close()  
 

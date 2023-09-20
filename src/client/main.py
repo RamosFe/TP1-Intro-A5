@@ -4,6 +4,7 @@ import socket
 
 from src.client import parser as ps
 from src.lib.controllers.upload import upload_file
+from src.lib.controllers.download import download_file
 
 
 def verify_params(args):
@@ -51,6 +52,7 @@ def main():
 
     elif args.command == 'download':
         print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')  ## TODO 
+        download_file(client_socket, args.dst, args.name, args.verbose, False)
 
     client_socket.close()
     print("Bye! See you next time ;)")

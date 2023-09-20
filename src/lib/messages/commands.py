@@ -34,10 +34,15 @@ class CommandResponse:
         self._msg = msg
 
     def is_error(self) -> bool:
-        return self._msg != 'OK'
+        return "ERR" in self._msg
 
     def to_str(self) -> str:
         return self._msg
+    
+    def size(self) -> int:
+        if self.is_error() or "UPLOAD" not in self._msg:
+            return -1
+        return self._msg.split(':')[2]
 
     @staticmethod
     def ok_response():

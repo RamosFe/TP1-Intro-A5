@@ -1,6 +1,8 @@
 import os
 import socket
 from threading import Event
+from alive_progress import alive_bar
+from math import ceil
 
 from src.lib.constants import UPLOAD_FINISH_MSG
 
@@ -15,7 +17,7 @@ class FileSystemDownloader:
     def file_exists(self, filename: str) -> bool:
         return os.path.exists(os.path.join(self._mount_path, filename))
 
-    def download_file(self, socket: socket.socket, path: str, exit_signal: Event):
+    def download_file(self, socket: socket.socket, path: str, exit_signal: Event, size: int):
         with open(os.path.join(self._mount_path, path), 'wb') as file:
             while not exit_signal.isSet():
                 data = socket.recv(self._chunk_size)
@@ -23,5 +25,5 @@ class FileSystemDownloader:
                 if data == UPLOAD_FINISH_MSG:
                     break
 
-                print(data.decode())
+                # print(data.decode())
                 file.write(data)
