@@ -5,6 +5,3 @@ server:
 
 client-upload:
 	python3 -m src.client.main upload -H 127.0.0.1 -p 6000 -s $(p) -n $(n)
-
-client-ls:
-	python3 -m src.client.main ls -H 127.0.0.1 -p 6000
