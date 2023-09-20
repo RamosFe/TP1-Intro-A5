@@ -21,11 +21,6 @@ def parse_arguments():
     download_parser.add_argument('-d', '--dst', type=str, help='destination file path')
     download_parser.add_argument('-n', '--name', type=str, help='file name')
 
-    list_files = subparsers.add_parser('ls')
-    list_files.add_argument('-H', '--host', type=str, help='server IP address')
-    list_files.add_argument('-p', '--port', type=int, help='server port')
-    list_files.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
-
     # TODO complete a gral help message abou the client
 
     args = parser.parse_args()

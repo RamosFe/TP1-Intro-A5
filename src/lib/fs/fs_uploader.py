@@ -4,7 +4,6 @@ from alive_progress import alive_bar
 import time
 from math import ceil
 
-
 class FileSystemUploader:
     def __init__(self, chunk_size: int):
         self._chunk_size = chunk_size
@@ -20,9 +19,6 @@ class FileSystemUploader:
         except Exception as e:
             print(f'Error: {e}')
             raise e
-
-    def is_file(file_path):
-        return os.path.exists(file_path)
 
     def upload_file(self, socket: socket.socket, path: str, name: str, verbose: bool, server: bool):
         try:
