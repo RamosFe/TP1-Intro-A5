@@ -1,3 +1,5 @@
+SEQUENCENUMBERBITLENGTH = 1
+
 class SequenceNumber:
     """
     Represents a sequence number.
@@ -56,41 +58,6 @@ class FileContent:
         return self._data
 
 
-class UDPHeader:
-    """
-    Represents a UDP header.
-
-    Args:
-        source_port (int): Source port number.
-        destination_port (int): Destination port number.
-        length (int): Length of the UDP packet.
-        checksum (int): Checksum value.
-
-    Methods:
-        from_bits(bit_sequence): Creates a UDPHeader from a binary bit sequence.
-        size_in_bits(): Returns the size of the UDPHeader in bits (assuming a fixed size).
-    """
-    def __init__(self, source_port, destination_port, length, checksum):
-        self.source_port = source_port
-        self.destination_port = destination_port
-        self.length = length
-        self.checksum = checksum
-
-    @classmethod
-    def from_bits(cls, bit_sequence):
-        """Creates a UDPHeader from a binary bit sequence."""
-        source_port = int(bit_sequence[0:16], 2)
-        destination_port = int(bit_sequence[16:32], 2)
-        length = int(bit_sequence[32:48], 2)
-        checksum = int(bit_sequence[48:64], 2)
-        return cls(source_port, destination_port, length, checksum)
-
-    @staticmethod
-    def size_in_bits() -> int:
-        """Returns the size of the UDPHeader in bits (assuming a fixed size)."""
-        return 64
-
-
 class StopAndWaitMessage:
     """
     Represents a Stop-and-Wait message.
@@ -104,8 +71,7 @@ class StopAndWaitMessage:
         from_bits(bit_sequence): Creates a StopAndWaitMessage from a binary bit sequence.
         is_corrupted(): Checks if the message is corrupted (always returns False for this example).
     """
-    def __init__(self, header: UDPHeader, sq_number: SequenceNumber, content: FileContent):
-        self.udp_header = header
+    def __init__(self, sq_number: SequenceNumber, content: FileContent):
         self.sequence_number = sq_number
         self.content = content
 
@@ -113,16 +79,15 @@ class StopAndWaitMessage:
     def from_bits(cls, bit_sequence):
         """Creates a StopAndWaitMessage from a binary bit sequence."""
         # Extract the bit sequences for UDPHeader, SequenceNumber, and FileContent
-        header_bits = bit_sequence[:64]  # Assuming UDPHeader is 64 bits
-        sq_number_bits = bit_sequence[64]  # Assuming SequenceNumber is 1 bit
-        content_bits = bit_sequence[65:]  # Assuming the rest is for FileContent
+    
+        sq_number_bits = bit_sequence[SEQUENCENUMBERBITLENGTH]  # Assuming SequenceNumber is 1 bit
+        content_bits = bit_sequence[SEQUENCENUMBERBITLENGTH:]  # Assuming the rest is for FileContent
 
         # Create instances of UDPHeader, SequenceNumber, and FileContent using from_bits
-        header = UDPHeader.from_bits(header_bits)
         sq_number = SequenceNumber.from_bits(sq_number_bits)
         content = FileContent.from_bits(content_bits)
 
-        return cls(header, sq_number, content)
+        return cls(sq_number, content)
 
     def is_corrupted(self) -> bool:
         """Checks if the message is corrupted (always returns False for this example)."""
@@ -143,21 +108,16 @@ class StopAndWaitACK:
         from_bits(bit_sequence): Creates a StopAndWaitACK from a binary bit sequence.
         is_corrupted(): Checks if the acknowledgment is corrupted (always returns False for this example).
     """
-    def __init__(self, header: UDPHeader ,sqs_number: SequenceNumber):
-        self.udp_header = header
+    def __init__(self,sqs_number: SequenceNumber):
         self.sequence_number = sqs_number
 
     @classmethod
     def from_bits(cls, bit_sequence):
         """Creates a StopAndWaitACK from a binary bit sequence."""
-        # Extract the bit sequences for UDPHeader and SequenceNumber
-        header_bits = bit_sequence[:64]
-        sq_number_bits = bit_sequence[64]
-
-        header = UDPHeader.from_bits(header_bits)
+        # Extract the bit sequences for SequenceNumber
+        sq_number_bits = bit_sequence[SEQUENCENUMBERBITLENGTH]
         sq_number = SequenceNumber.from_bits(sq_number_bits)
-
-        return cls(header, sq_number)
+        return cls(sq_number)
 
     def is_corrupted(self) -> bool:
         """Checks if the acknowledgment is corrupted (always returns False for this example)."""

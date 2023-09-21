@@ -11,7 +11,7 @@ class ModuleNCounter:
     """
     def __init__(self, n: int):
         self._value = 0
-
+        
         if n <= 1:
             raise ValueError('N must be an integer greater than 1')
         self._n = n
