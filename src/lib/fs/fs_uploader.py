@@ -31,13 +31,17 @@ class FileSystemUploader:
                 if verbose:
                     calibration = '{step}/{steps} ({percentage:.2f}%, {elapsed}s elapsed)' # verbose
                     print(f"Uploading file {name}")
-                
-                with alive_bar(steps, bar='bubbles', title=f'↑ {name}') as bar:
+
+                if server:
                     for chunk in iter(lambda: file.read(self._chunk_size), b''):
                         socket.send(chunk)
-                        bar()
-                
-                bar.text('✔ Done ✔')
+                else:
+                    with alive_bar(steps, bar='bubbles', title=f'↑ {name}') as bar:
+                        for chunk in iter(lambda: file.read(self._chunk_size), b''):
+                            socket.send(chunk)
+                            bar()
+                    
+                    bar.text('✔ Done ✔')
 
                 if verbose:
                     print(f"File {name} uploaded successfully")

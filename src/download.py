@@ -14,7 +14,7 @@ def main():
         return
     
     print(f'Downloading {args.name} from {args.host}:{args.port} to {args.dst}')  ## TODO 
-    ut.download_file(client_socket, args.dst, args.name, args.verbose, False)
+    ut.download_file(client_socket, args.dst, args.name, args.verbose)
     
     client_socket.close()
     print("Bye! See you next time ;)")

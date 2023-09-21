@@ -24,6 +24,6 @@ def download_file(connection: socket.socket, addr: str, max_chunk_size: int, mou
             response = CommandResponse.ok_response().to_str()
             connection.sendall(response.encode())
             fs_handler.download_file(connection, comm.name, exit_signal, 0) # TODO change size
-        print(f"Closing {addr}")
+        print(f"Closing {addr}<-<-<-")
         connection.close()  
 

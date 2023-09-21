@@ -14,7 +14,7 @@ def main():
         return
     
     print(f'Uploading {args.src} to {args.host}:{args.port} as {args.name}')
-    ut.upload_file(client_socket, args.src, args.name, args.verbose, False)
+    ut.upload_file(client_socket, args.src, args.name, args.verbose)
 
     client_socket.close()
     print("Bye! See you next time ;)")

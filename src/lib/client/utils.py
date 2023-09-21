@@ -41,7 +41,7 @@ def connect(args):
     
     return client_socket
 
-def upload_file(socket, path, name, verbose: bool, server: bool):
+def upload_file(socket, path, name, verbose: bool):
     fs_handler = FileSystemUploader(CHUNK_SIZE)
     file_size = fs_handler.get_file_size(path)
 
@@ -49,7 +49,7 @@ def upload_file(socket, path, name, verbose: bool, server: bool):
     command = Command(MessageOption.UPLOAD, name, file_size)
     socket.send(command.to_str().encode())
     
-    if verbose and not server: # TODO server side
+    if verbose:
         print(f"Senting request to server to upload file {name} with size {file_size} bytes")
 
     response = socket.recv(BUFFER_SIZE).decode()
@@ -58,13 +58,15 @@ def upload_file(socket, path, name, verbose: bool, server: bool):
         print(f"❌ Request rejected -> {command._msg} ❌")
         return
     
-    if verbose and not server: # TODO server side
+    if verbose:
         print("✔ Request accepted ✔")
 
-    fs_handler.upload_file(socket, path, name, verbose, server)
+    fs_handler.upload_file(socket, path, name, verbose, False)
+    print(f"File {name} uploaded successfully")
     socket.send(UPLOAD_FINISH_MSG)
+    print("✔ Done ✔")
 
-def download_file(connection: socket.socket, dest: str, name: str, verbose: bool, server: bool):
+def download_file(connection: socket.socket, dest: str, name: str, verbose: bool):
     fs_handler = FileSystemDownloader("./", CHUNK_SIZE)
     if fs_handler.file_exists(filename=name):
         print(f'file {name} already exists')
@@ -76,7 +78,7 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
         command = Command(MessageOption.DOWNLOAD, name, 0)
         connection.send(command.to_str().encode())
 
-        if verbose and not server: # TODO server side
+        if verbose:
             print(f"Senting request to server to download file {name}")
 
         response = connection.recv(BUFFER_SIZE).decode()
@@ -85,11 +87,10 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
             print(f"❌ Request rejected -> {command._msg} ❌")
             return
         
-        if verbose and not server: # TODO server side
+        if verbose:
             print("✔ Request accepted ✔")
 
-        print(command)
-        size = command.size
+        size = command.size()
 
         # user_input = input(f"Download file {name} with size {size} bytes? [y/n]: ")
         # if user_input.lower() not in ("y", "yes"):
@@ -97,6 +98,6 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
         
         response = CommandResponse.ok_response().to_str()
         connection.sendall(response.encode())
+        print(f"Closing {size}")
         fs_handler.download_file(connection, dest, Event(), size)
-        #print(f"Closing {addr}")
         connection.close()  

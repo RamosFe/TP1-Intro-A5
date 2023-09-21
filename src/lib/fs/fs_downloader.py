@@ -22,8 +22,8 @@ class FileSystemDownloader:
             while not exit_signal.isSet():
                 data = socket.recv(self._chunk_size)
 
-                if data == UPLOAD_FINISH_MSG:
+                if UPLOAD_FINISH_MSG in data:
+                    file.write(data[:data.index(UPLOAD_FINISH_MSG)])
                     break
 
-                # print(data.decode())
                 file.write(data)
