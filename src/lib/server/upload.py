@@ -1,7 +1,7 @@
 import socket
 from threading import Event
 from src.lib.fs.fs_uploader import *
-from src.lib.messages.commands import Command, CommandResponse, MessageOption
+from src.lib.commands import Command, CommandResponse, MessageOption
 from src.lib.constants import CHUNK_SIZE, BUFFER_SIZE, UPLOAD_FINISH_MSG
 
 

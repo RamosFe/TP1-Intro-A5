@@ -1,6 +1,6 @@
 
 from threading import Event
-from src.lib.messages.commands import Command, CommandResponse
+from src.lib.commands import Command, CommandResponse
 import socket
 
 from src.lib.fs.fs_downloader import FileSystemDownloader

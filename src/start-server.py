@@ -2,7 +2,7 @@ import socket
 from threading import Thread, Event
 from typing import List
 
-from src.lib.controllers.handler import handler
+from lib.server.handler import handler
 from src.lib.constants import CHUNK_SIZE
 
 HARDCODED_HOST = '127.0.0.1'
