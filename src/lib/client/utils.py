@@ -33,11 +33,11 @@ def connect(args):
         print("Connection closed. Reconnect and try again.")
         return None
     except Exception as e:  # TODO specify exception and handle it
-        print(f'Error: {e}')
+        print('😨 An exception occurred, please try again 😨')
         return None
 
     if args.verbose:
-        print(f'Successfully connected to {args.host}:{args.port}')
+        print(f'✔ Successfully connected to {args.host}:{args.port} ✔')
     
     return client_socket
 
@@ -50,7 +50,7 @@ def upload_file(socket, path, name, verbose: bool):
     socket.send(command.to_str().encode())
     
     if verbose:
-        print(f"Senting request to server to upload file {name} with size {file_size} bytes")
+        print(f"-> Sending request to server to upload file {name} with size {file_size} bytes")
 
     response = socket.recv(BUFFER_SIZE).decode()
     command = CommandResponse(response)
@@ -62,24 +62,24 @@ def upload_file(socket, path, name, verbose: bool):
         print("✔ Request accepted ✔")
 
     fs_handler.upload_file(socket, path, name, verbose, False)
-    print(f"File {name} uploaded successfully")
+    
+    if verbose:
+        print(f"✔ File {name} uploaded successfully ✔")
+    
     socket.send(UPLOAD_FINISH_MSG)
-    print("✔ Done ✔")
 
 def download_file(connection: socket.socket, dest: str, name: str, verbose: bool):
     fs_handler = FileSystemDownloader("./", CHUNK_SIZE)
     if fs_handler.file_exists(filename=name):
-        print(f'file {name} already exists')
+        print(f'❌ File {name} already exists ❌')
         return
     
     with connection:
-        #print(f"{addr}: {comm.option.value} file: {comm.name} size: {comm.size}")
-
         command = Command(MessageOption.DOWNLOAD, name, 0)
         connection.send(command.to_str().encode())
 
         if verbose:
-            print(f"Senting request to server to download file {name}")
+            print(f"-> Sending request to server to download file {name}")
 
         response = connection.recv(BUFFER_SIZE).decode()
         command = CommandResponse(response)
@@ -92,12 +92,22 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
 
         size = command.size()
 
-        # user_input = input(f"Download file {name} with size {size} bytes? [y/n]: ")
-        # if user_input.lower() not in ("y", "yes"):
-        #     return
+        user_input = input(f"Download file {name} with size {size} bytes? [y/n]: ")
+        if user_input.lower() not in ("y", "yes"):
+            print("❌ Download canceled ❌")
+            response = CommandResponse.err_response("ERR Download canceled").to_str()
+            connection.sendall(response.encode())
+            return
         
         response = CommandResponse.ok_response().to_str()
         connection.sendall(response.encode())
-        print(f"Closing {size}")
-        fs_handler.download_file(connection, dest, Event(), size)
+
+        if verbose:
+            print(f"-> Downloading file {name} with name {dest}")
+
+        fs_handler.download_file(connection, dest, Event(), size, False)
+
+        if verbose:
+            print(f"✔ File {name} downloaded successfully ✔")
+            
         connection.close()  

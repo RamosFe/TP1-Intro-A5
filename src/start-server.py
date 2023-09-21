@@ -19,7 +19,7 @@ def main(host: str, port: int, max_chunk_size: int, mount_path: str):
     server_socket.bind((host, port))
     server_socket.listen()
 
-    print("Waiting connection")
+    print("-> Waiting connections")
     clients: List[Thread] = []
     while True:
         try:
@@ -29,6 +29,14 @@ def main(host: str, port: int, max_chunk_size: int, mount_path: str):
             new_client.start()
         except KeyboardInterrupt:
             print("CTRL-C")
+            exit_signal_event.set()
+
+            for client in clients:
+                client.join()
+            server_socket.close()
+            break
+        except Exception as e:
+            print('😨 An exception occurred, sorry 😨')
             exit_signal_event.set()
 
             for client in clients:

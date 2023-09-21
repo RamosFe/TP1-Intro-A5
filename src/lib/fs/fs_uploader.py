@@ -15,10 +15,11 @@ class FileSystemUploader:
         # TODO Handle error nicely
         except FileNotFoundError as e:
             print(f"File not found {path}")
-            raise e
+            return -1
         except Exception as e:
-            print(f'Error: {e}')
-            raise e
+            print('😨 An exception occurred, please try again 😨')
+            return -1
+
         
     def is_file(file_path):
         return os.path.exists(file_path) and os.path.isfile(file_path)
@@ -27,10 +28,8 @@ class FileSystemUploader:
         try:
             with open(path, 'rb') as file:
                 steps = ceil(os.path.getsize(path) / self._chunk_size)
-                calibration = '{percentage:.2f}%' # not verbose
                 if verbose:
-                    calibration = '{step}/{steps} ({percentage:.2f}%, {elapsed}s elapsed)' # verbose
-                    print(f"Uploading file {name}")
+                    print(f"-> Uploading file {name}")
 
                 if server:
                     for chunk in iter(lambda: file.read(self._chunk_size), b''):
@@ -42,13 +41,10 @@ class FileSystemUploader:
                             bar()
                     
                     bar.text('✔ Done ✔')
-
-                if verbose:
-                    print(f"File {name} uploaded successfully")
         
         except FileNotFoundError as e:
-            print(f"File not found {path}")
-            raise e
-        except Exception as e: # TODO Handle error nicely
-            print(f'Error: {e}')
-            raise e
+            print(f"❌ File not found {path} ❌")
+            socket.send(b'ERR File not found')
+        
+        except Exception as e:
+            print('😨 An exception occurred, please try again 😨')
