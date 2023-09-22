@@ -1,6 +1,11 @@
 import socket
 import textwrap
-from src.lib.rdt.msg_components import SequenceNumber, FileContent, StopAndWaitMessage, StopAndWaitACK
+from src.lib.rdt.msg_components import (
+    SequenceNumber,
+    FileContent,
+    StopAndWaitMessage,
+    StopAndWaitACK,
+)
 from src.lib.rdt.module_counter import ModuleNCounter
 
 MAX_SIZE_OF_SEQUENCE_NUMBER = 1
@@ -18,6 +23,7 @@ class RdtWSSocket:
         _internal_socket (socket.socket): The internal UDP socket.
         _max_chunks_size (int): Maximum size of data chunks.
     """
+
     def __init__(self, chunk_size: int = HARDCODED_MAX_CHUNK_SIZE):
         self._internal_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._max_chunks_size = chunk_size
@@ -49,8 +55,9 @@ class RdtWSSocket:
             data (str): The data to send.
         """
         # Divides the str into strings with the specified chunk size
-        chunks = textwrap.wrap(data,
-                                (self._max_chunks_size - MAX_SIZE_OF_SEQUENCE_NUMBER) // 8)
+        chunks = textwrap.wrap(
+            data, (self._max_chunks_size - MAX_SIZE_OF_SEQUENCE_NUMBER) // 8
+        )
         # Starts the counter
         counter = ModuleNCounter(2)
         for chunk in chunks:
@@ -63,24 +70,27 @@ class RdtWSSocket:
                 # sequence number and the file content
                 msg = sequence_number.to_bits() + file_content.to_bits()
                 # Sends the msg
-                self._internal_socket.send(msg)
+                self._internal_socket.send(msg.encode())
 
                 # Waits for the ACK
-                response = self._internal_socket.recv(self._max_chunks_size) #TODO ADD TIMEOUT
+                response = self._internal_socket.recv(self._max_chunks_size)
+
+                # TODO ADD TIMEOUT
+
                 # Parses the ACK Response
-                ack_response = StopAndWaitACK.from_bits(response)
+                ack_response = StopAndWaitACK.from_bits(response.decode())
                 if response is None:
-                    #TODO HANDLE RESPONSE NONE (Raise error)
+                    # TODO HANDLE RESPONSE NONE (Raise error)
                     return "Error"
                 # TODO WAIT RESPONSE
 
                 # Checks if it is the expected sequence number and is not corrupted
-                if ack_response.sequence_number.get_value() == counter.get_value() or not ack_response.is_corrupted(): # TODO; cheqiear si sacamos el .is_corrupted
+                if (
+                    ack_response.sequence_number.get_value() == counter.get_value()
+                    or not ack_response.is_corrupted()
+                ):  # TODO; chequear si sacamos el .is_corrupted
                     counter.increment()
                     break
-        
-
-
 
     def recv(self):
         """
@@ -105,25 +115,32 @@ class RdtWSSocket:
                 break
 
             # Parses the message
-            message = StopAndWaitMessage.from_bits(response)
+            message = StopAndWaitMessage.from_bits(response.decode())
 
             # TODO Validate checksum corruption
             # If it is not corrupted and the sequence number is the expected, process it
-            if not message.is_corrupted() and message.sequence_number.get_value() == counter.get_value():
+            if (
+                not message.is_corrupted()
+                and message.sequence_number.get_value() == counter.get_value()
+            ):
                 # Adds the content to the buffer
-                buffer.append(str(message.content))  # TODO change to bytes instead of strings....
+                buffer.append(
+                    str(message.content)
+                )  # TODO change to bytes instead of strings....
 
                 # Creates the ACK Response and send it
                 ack_response = message.sequence_number.to_bits()
-                self._internal_socket.send(ack_response)
+                self._internal_socket.send(ack_response.encode())
 
                 # Increment the sequence number counter
                 counter.increment()
             else:
                 # Creates the ACK Response with the next sequence number value
                 # due to being corrupted or not the expected sequence number
-                ack_response = SequenceNumber((message.sequence_number.get_value() + 1) % 2).to_bits() #  ? Check if needs to % 2 the number or if rotates by module 
-                self._internal_socket.send(ack_response)
+                ack_response = SequenceNumber(
+                    (message.sequence_number.get_value() + 1) % 2
+                ).to_bits()  #  ? Check if needs to % 2 the number or if rotates by module
+                self._internal_socket.send(ack_response.encode())
 
         return buffer
 
