@@ -6,20 +6,23 @@ from src.lib.commands import Command, MessageOption, CommandResponse
 from src.lib.constants import BUFFER_SIZE, CHUNK_SIZE, UPLOAD_FINISH_MSG
 from src.lib.fs.fs_uploader import FileSystemUploader
 from src.lib.fs.fs_downloader import FileSystemDownloader
+from src.rdt_stop_and_wait import RdtWSSocket
 
 
 def verify_params(args, command: str):
     if not args.host or not args.port:
         return False
-    if command == 'upload' and (not args.src or not args.name):
+    if command == "upload" and (not args.src or not args.name):
         return False
-    if command == 'download' and (not args.dst or not args.name):
+    if command == "download" and (not args.dst or not args.name):
         return False
     return True
 
+
 def connect(args):
     address = (args.host, args.port)
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    client_socket = RdtWSSocket()
 
     try:
         client_socket.connect(address)
@@ -33,13 +36,14 @@ def connect(args):
         print("Connection closed. Reconnect and try again.")
         return None
     except Exception as e:  # TODO specify exception and handle it
-        print('😨 An exception occurred, please try again 😨')
+        print(f"😨 An exception occurred, please try again -> {e}😨")
         return None
 
     if args.verbose:
-        print(f'✔ Successfully connected to {args.host}:{args.port} ✔')
-    
+        print(f"✔ Successfully connected to {args.host}:{args.port} ✔")
+
     return client_socket
+
 
 def upload_file(socket, path, name, verbose: bool):
     fs_handler = FileSystemUploader(CHUNK_SIZE)
@@ -48,32 +52,35 @@ def upload_file(socket, path, name, verbose: bool):
     # TODO check on server side if another file has the same name, also check if the file doesn't has more than the max size
     command = Command(MessageOption.UPLOAD, name, file_size)
     socket.send(command.to_str().encode())
-    
+
     if verbose:
-        print(f"-> Sending request to server to upload file {name} with size {file_size} bytes")
+        print(
+            f"-> Sending request to server to upload file {name} with size {file_size} bytes"
+        )
 
     response = socket.recv(BUFFER_SIZE).decode()
     command = CommandResponse(response)
     if command.is_error():
         print(f"❌ Request rejected -> {command._msg} ❌")
         return
-    
+
     if verbose:
         print("✔ Request accepted ✔")
 
     fs_handler.upload_file(socket, path, name, verbose, False)
-    
+
     if verbose:
         print(f"✔ File {name} uploaded successfully ✔")
-    
+
     socket.send(UPLOAD_FINISH_MSG)
+
 
 def download_file(connection: socket.socket, dest: str, name: str, verbose: bool):
     fs_handler = FileSystemDownloader("./", CHUNK_SIZE)
     if fs_handler.file_exists(filename=name):
-        print(f'❌ File {name} already exists ❌')
+        print(f"❌ File {name} already exists ❌")
         return
-    
+
     with connection:
         command = Command(MessageOption.DOWNLOAD, name, 0)
         connection.send(command.to_str().encode())
@@ -86,7 +93,7 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
         if command.is_error():
             print(f"❌ Request rejected -> {command._msg} ❌")
             return
-        
+
         if verbose:
             print("✔ Request accepted ✔")
 
@@ -98,7 +105,7 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
             response = CommandResponse.err_response("ERR Download canceled").to_str()
             connection.sendall(response.encode())
             return
-        
+
         response = CommandResponse.ok_response().to_str()
         connection.sendall(response.encode())
 
@@ -109,5 +116,5 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
 
         if verbose:
             print(f"✔ File {name} downloaded successfully ✔")
-            
-        connection.close()  
+
+        connection.close()
