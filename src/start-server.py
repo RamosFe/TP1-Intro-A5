@@ -1,13 +1,11 @@
+import os
 import socket
 from threading import Thread, Event
 from typing import List
 
 from src.lib.server.handler import handler
 from src.lib.constants import CHUNK_SIZE
-
-HARDCODED_HOST = '127.0.0.1'
-HARDCODED_PORT = 6000
-HARDCODED_MOUNT_PATH = './server_files/'
+from src.lib.server import parser as ps
 
 
 def main(host: str, port: int, max_chunk_size: int, mount_path: str):
@@ -46,4 +44,12 @@ def main(host: str, port: int, max_chunk_size: int, mount_path: str):
 
 
 if __name__ == '__main__':
-    main(HARDCODED_HOST, HARDCODED_PORT, CHUNK_SIZE, HARDCODED_MOUNT_PATH)
+    args = ps.parse_arguments()
+    if not args.host or not args.port or not args.storage:
+        print('❌ Error: missing required argument(s) ❌')
+        args.print_help()
+        exit(1)
+    if not os.path.exists(args.storage) or not os.path.isdir(args.storage):
+        print(f'❌ Error: {args.storage} is not a directory ❌')
+        exit(1)
+    main(args.host, args.port, CHUNK_SIZE, args.storage)

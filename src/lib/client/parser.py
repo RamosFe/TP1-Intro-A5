@@ -7,10 +7,7 @@ def parse_arguments(command):
         parser = parse_arguments_upload()
     else:
         parser = parse_arguments_download()
-
-    args = parser.parse_args()
-
-    return args
+    return parser.parse_args()
 
 def parse_arguments_upload():
     parser = argparse.ArgumentParser(description='Upload')
