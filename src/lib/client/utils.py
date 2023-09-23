@@ -2,6 +2,7 @@
 
 import socket
 from threading import Event
+from src.lib.utils import byte_to_srt
 from src.lib.commands import Command, MessageOption, CommandResponse
 from src.lib.constants import BUFFER_SIZE, CHUNK_SIZE, UPLOAD_FINISH_MSG
 from src.lib.fs.fs_uploader import FileSystemUploader
@@ -50,7 +51,7 @@ def upload_file(socket, path, name, verbose: bool):
     socket.send(command.to_str().encode())
     
     if verbose:
-        print(f"-> Sending request to server to upload file {name} with size {file_size} bytes")
+        print(f"Sending request to server to upload file {name} with size {byte_to_srt(file_size)}")
 
     response = socket.recv(BUFFER_SIZE).decode()
     command = CommandResponse(response)
@@ -79,7 +80,7 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
         connection.send(command.to_str().encode())
 
         if verbose:
-            print(f"-> Sending request to server to download file {name}")
+            print(f"Sending request to server to download file {name}")
 
         response = connection.recv(BUFFER_SIZE).decode()
         command = CommandResponse(response)
@@ -92,7 +93,7 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
 
         size = command.size()
 
-        user_input = input(f"Download file {name} with size {size} bytes? [y/n]: ")
+        user_input = input(f"Download file {name} with size {byte_to_srt(size)}? [Y/n] ")
         if user_input.lower() not in ("y", "yes"):
             print("❌ Download canceled ❌")
             response = CommandResponse.err_response("ERR Download canceled").to_str()
@@ -103,7 +104,7 @@ def download_file(connection: socket.socket, dest: str, name: str, verbose: bool
         connection.sendall(response.encode())
 
         if verbose:
-            print(f"-> Downloading file {name} with name {dest}")
+            print(f"Downloading file {name} with name {dest}")
 
         fs_handler.download_file(connection, dest, Event(), size, False)
 

@@ -17,15 +17,12 @@ class Command:
 
     @staticmethod
     def from_str(msg: str):
-        
-        print(f"msg:{msg}")
         parts = msg.split(':')
         option = MessageOption(parts[0])
         name = parts[1]
         size = None   
         if option == MessageOption.UPLOAD:
             size = int(parts[2])
-            print(size)
         return Command(option, name, size)
 
 

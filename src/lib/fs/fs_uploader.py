@@ -29,7 +29,7 @@ class FileSystemUploader:
             with open(path, 'rb') as file:
                 steps = ceil(os.path.getsize(path) / self._chunk_size)
                 if verbose:
-                    print(f"-> Uploading file {name}")
+                    print(f"Uploading file {name}")
 
                 if server:
                     for chunk in iter(lambda: file.read(self._chunk_size), b''):
