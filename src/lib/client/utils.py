@@ -36,7 +36,7 @@ def connect(args):
         print("Connection closed. Reconnect and try again.")
         return None
     except Exception as e:  # TODO specify exception and handle it
-        print(f"😨 An exception occurred, please try again -> {e}😨")
+        print(f"4 😨 An exception has occurred, please try again -> {e}😨")
         return None
 
     if args.verbose:

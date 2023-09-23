@@ -34,5 +34,5 @@ if __name__ == "__main__":
         print("Bye! See you next time 😉")
         exit(0)
     except Exception as e:
-        print(f"😨 An exception occurred, please try again -> {e}😨")
+        print(f"3 😨 An exception has occurred, please try again -> {e}😨")
         exit(1)

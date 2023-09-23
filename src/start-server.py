@@ -64,7 +64,7 @@ def main(host: str, port: int, max_chunk_size: int, mount_path: str):
             sender_thread.join()
             break
         except Exception as e:
-            print(f"😨 An exception occurred, please try again -> {e}😨")
+            print(f"2😨 An exception has occurred, please try again -> {e}😨")
             exit_signal_event.set()
 
             for client in clients:

@@ -18,7 +18,7 @@ class FileSystemUploader:
             print(f"File not found {path}")
             return -1
         except Exception as e:
-            print("😨 An exception occurred, please try again 😨")
+            print("6 😨 An exception has occurred, please try again 😨")
             return -1
 
     def is_file(file_path):
@@ -51,4 +51,4 @@ class FileSystemUploader:
             socket.send(b"ERR File not found")
 
         except Exception as e:
-            print(f"😨 An exception occurred, please try again 😨 -> {e}")
+            print(f"5 😨 An exception has occurred, please try again 😨 -> {e}")
