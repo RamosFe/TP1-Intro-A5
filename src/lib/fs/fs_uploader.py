@@ -24,8 +24,10 @@ class FileSystemUploader:
     def is_file(file_path):
         return os.path.exists(file_path) and os.path.isfile(file_path)
 
+    # sender es channel si es server
+    # sender es socket si es cliente
     def upload_file(
-        self, socket: socket.socket, path: str, name: str, verbose: bool, server: bool
+        self, sender, path: str, name: str, verbose: bool, server: bool,
     ):
         try:
             with open(path, "rb") as file:
@@ -35,7 +37,7 @@ class FileSystemUploader:
 
                 if server:
                     for chunk in iter(lambda: file.read(self._chunk_size), b""):
-                        socket.send(chunk)
+                        sender[0].put((chunk,sender[1]))
                 else:
                     with alive_bar(steps, bar="bubbles", title=f"↑ {name}") as bar:
                         for chunk in iter(lambda: file.read(self._chunk_size), b""):

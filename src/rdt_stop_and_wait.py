@@ -27,6 +27,7 @@ class RdtWSSocket:
     def __init__(self, chunk_size: int = HARDCODED_MAX_CHUNK_SIZE):
         self._internal_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._max_chunks_size = chunk_size
+        self._addr = None
 
     def bind(self, ip: str, port: int):
         """
@@ -37,6 +38,7 @@ class RdtWSSocket:
             port (int): Port number to bind to.
         """
         self._internal_socket.bind((ip, port))
+        self._addr = (ip,port)
 
     def connect(self, addr):
         """
@@ -50,7 +52,12 @@ class RdtWSSocket:
     def accept(self):
         return self._internal_socket.accept()
 
-    def send(self, data: str):
+    def send (self,data):
+        if not self._addr == None:
+            print("errorrrrr")
+        return self.sendto(data, self._addr)
+
+    def sendto(self, data: str, addr):
         """
         Send data using the Stop-and-Wait protocol.
 
@@ -73,7 +80,7 @@ class RdtWSSocket:
                 # sequence number and the file content
                 msg = sequence_number.to_bits() + file_content.to_bits()
                 # Sends the msg
-                self._internal_socket.send(msg.encode())
+                self._internal_socket.sendto(msg.encode(), addr)
 
                 # Waits for the ACK
                 response = self._internal_socket.recv(
@@ -110,7 +117,7 @@ class RdtWSSocket:
 
         while True:
             # Wait for a message
-            response = self._internal_socket.recv(self._max_chunks_size)
+            response, addr = self._internal_socket.recvfrom(self._max_chunks_size )    
 
             # If there is no message, the socket is close
             if not response:
@@ -130,7 +137,7 @@ class RdtWSSocket:
                     str(message.content)
                 )  # TODO change to bytes instead of strings....
 
-                # Creates the ACK Response and send it
+                # Creates the ACK  Response and send it
                 ack_response = message.sequence_number.to_bits()
                 self._internal_socket.send(ack_response.encode())
 
@@ -144,7 +151,7 @@ class RdtWSSocket:
                 ).to_bits()  #  ? Check if needs to % 2 the number or if rotates by module
                 self._internal_socket.send(ack_response.encode())
 
-        return buffer
+        return buffer,addr
 
     def close(self):
         """Close the internal socket."""
