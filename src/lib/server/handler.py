@@ -9,12 +9,12 @@ from queue import Queue
 
 # channel, channel_receive, addr, mount_path, exit_signal_event
 def handler(channel_from_client: Queue,channel_to_sender : Queue ,addr: str, max_chunk_size: int, mount_path: str, exit_signal: Event):
-    try :
+    # try :
         data = channel_from_client.get()
         command = Command.from_str(data.decode())
         if command.option == MessageOption.UPLOAD:
             return download_file(channel_from_client, channel_to_sender, addr, max_chunk_size, mount_path, exit_signal,command)        
         elif command.option == MessageOption.DOWNLOAD:
             return upload_file(channel_from_client, channel_to_sender, addr, max_chunk_size, mount_path, exit_signal,command)
-    except Exception as e:
-        print("sos una verga aprende a programar")
+    # except Exception as e:
+    #     print("sos una verga aprende a programar")

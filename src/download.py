@@ -29,12 +29,12 @@ def main():
 
 
 if __name__ == "__main__":
-    try:
+    # try:
         main()
-    except KeyboardInterrupt:
-        print("\nClient stopped by the user")
-        print("Bye! See you next time 😉")
-        exit(0)
-    except Exception as e:
-        print(f"1-😨 An exception has occurred, please try again -> {e}😨")
-        exit(1)
+    # except KeyboardInterrupt:
+    #     print("\nClient stopped by the user")
+    #     print("Bye! See you next time 😉")
+    #     exit(0)
+    # except Exception as e:
+    #     print(f"1-😨 An exception has occurred, please try again -> {e}😨")
+    #     exit(1)

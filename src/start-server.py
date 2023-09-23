@@ -32,10 +32,10 @@ def main(host: str, port: int, max_chunk_size: int, mount_path: str):
     sender_thread.start()
 
     while True: 
-        try:
+        # try:
             print("wipi")
             data, addr = server_socket.recv() 
-
+            print(f"llego data !!! {data} con addr {addr}")
             if addr not in channels.keys():
                 # TODO establish handshake with addr
 
@@ -54,24 +54,24 @@ def main(host: str, port: int, max_chunk_size: int, mount_path: str):
                 channel = channels[addr]
                 channel.put(data)
 
-        except KeyboardInterrupt:
-            print("CTRL-C")
-            exit_signal_event.set()
+        # except KeyboardInterrupt:
+        #     print("CTRL-C")
+        #     exit_signal_event.set()
 
-            for client in clients:
-                client.join()
-            server_socket.close()
-            sender_thread.join()
-            break
-        except Exception as e:
-            print(f"2😨 An exception has occurred, please try again -> {e}😨")
-            exit_signal_event.set()
+        #     for client in clients:
+        #         client.join()
+        #     server_socket.close()
+        #     sender_thread.join()
+        #     break
+        # except Exception as e:
+        #     print(f"2😨 An exception has occurred, please try again -> {e}😨")
+        #     exit_signal_event.set()
 
-            for client in clients:
-                client.join()
-            server_socket.close()
-            sender_thread.join()
-            break
+        #     for client in clients:
+        #         client.join()
+        #     server_socket.close()
+        #     sender_thread.join()
+        #     break
 
 
 if __name__ == "__main__":

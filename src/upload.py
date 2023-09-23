@@ -18,21 +18,22 @@ def main():
     client_socket = ut.connect(args)
     if client_socket is None:
         return
+    
 
     print(f"☁️ 📤 Uploading {args.src} to {args.host}:{args.port} as {args.name}")
-    ut.upload_file(client_socket, args.src, args.name, args.verbose)
+    ut.upload_file(client_socket, args.src, args.name, args.verbose,(args.host,args.port))
 
     client_socket.close()
     print("Bye! See you next time 😉")
 
 
 if __name__ == "__main__":
-    try:
+    # try:
         main()
-    except KeyboardInterrupt:
-        print("\nClient stopped by the user")
-        print("Bye! See you next time 😉")
-        exit(0)
-    except Exception as e:
-        print(f"3 😨 An exception has occurred, please try again -> {e}😨")
-        exit(1)
+    # except KeyboardInterrupt:
+        # print("\nClient stopped by the user")
+        # print("Bye! See you next time 😉")
+        # exit(0)
+    # except Exception as e:
+        # print(f"3 😨 An exception has occurred, please try again -> {e}😨")
+        # exit(1)

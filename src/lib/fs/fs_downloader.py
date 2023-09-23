@@ -40,7 +40,7 @@ class FileSystemDownloader:
         with alive_bar(steps, bar='bubbles', title=f'↓ {path}') as bar:
             with open(os.path.join(self._mount_path, path), 'wb') as file:
                 while not exit_signal.isSet():
-                    data = socket.recv(self._chunk_size)
+                    data = socket.recv()
                     bar()
 
                     if UPLOAD_FINISH_MSG in data:

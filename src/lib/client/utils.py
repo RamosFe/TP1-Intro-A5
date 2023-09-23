@@ -24,20 +24,20 @@ def connect(args):
 
     client_socket = RdtWSSocket()
 
-    try:
-        client_socket.connect(address)
-    except ConnectionRefusedError:
-        print("Connection refused. Make sure the server is running.")
-        return None
-    except TimeoutError:
-        print("Connection timed out. Check the host and port.")
-        return None
-    except BrokenPipeError:
-        print("Connection closed. Reconnect and try again.")
-        return None
-    except Exception as e:  # TODO specify exception and handle it
-        print(f"4 😨 An exception has occurred, please try again -> {e}😨")
-        return None
+    # try:
+    client_socket.connect(address)
+    # except ConnectionRefusedError:
+    #     print("Connection refused. Make sure the server is running.")
+    #     return None
+    # except TimeoutError:
+    #     print("Connection timed out. Check the host and port.")
+    #     return None
+    # except BrokenPipeError:
+    #     print("Connection closed. Reconnect and try again.")
+    #     return None
+    # except Exception as e:  # TODO specify exception and handle it
+    #     print(f"4 😨 An exception has occurred, please try again -> {e}😨")
+    #     return None
 
     if args.verbose:
         print(f"✔ Successfully connected to {args.host}:{args.port} ✔")
@@ -45,20 +45,21 @@ def connect(args):
     return client_socket
 
 
-def upload_file(socket, path, name, verbose: bool):
+def upload_file(socket, path, name, verbose: bool,adr:str):
     fs_handler = FileSystemUploader(CHUNK_SIZE)
     file_size = fs_handler.get_file_size(path)
 
     # TODO check on server side if another file has the same name, also check if the file doesn't has more than the max size
     command = Command(MessageOption.UPLOAD, name, file_size)
-    socket.send(command.to_str().encode())
-
+    print(f"before send with addr  : {adr}")
+    socket.send(command.to_str().encode(),adr)
     if verbose:
         print(
             f"-> Sending request to server to upload file {name} with size {file_size} bytes"
         )
-
-    response = socket.recv(BUFFER_SIZE).decode()
+    
+    response = socket.recv().decode()
+    print(f"response = {response}")
     command = CommandResponse(response)
     if command.is_error():
         print(f"❌ Request rejected -> {command._msg} ❌")
