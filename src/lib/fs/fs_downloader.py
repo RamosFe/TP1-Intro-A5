@@ -25,6 +25,7 @@ class FileSystemDownloader:
             self._download_file_client(receiver, path, exit_signal, size)  # aca el receiver es el socket a enviar
     
     def _download_file_server(self, channel_from_client: Queue, path: str, exit_signal: Event):
+        print(f'ctrl+f 123456 Downloading {path}...')
         with open(os.path.join(self._mount_path, path), 'wb') as file:
             while not exit_signal.isSet():
                 data = channel_from_client.get()

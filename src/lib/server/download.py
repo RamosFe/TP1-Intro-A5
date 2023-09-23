@@ -19,8 +19,10 @@ def download_file(channel_from_client: Queue, channel_to_sender: Queue, addr: st
         response = CommandResponse.err_response(f'ERR file {comm.name} already exists').to_str()
         channel_to_sender.put((response.encode(),addr))
     else:
+        print(f'File {comm.name}, sending ok')
         response = CommandResponse.ok_response().to_str()
         channel_to_sender.put((response.encode(),addr))
+        print(f'File {comm.name}, sending file')
         fs_handler.download_file(channel_from_client, comm.name, exit_signal, 0, True) # TODO change size
 
-
+            

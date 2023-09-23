@@ -7,6 +7,7 @@ def sender(channel_receive: Queue):
         if not channel_receive.empty():
             # try:
                 (data, addr) = channel_receive.get(block= False, timeout = None)   # the data is received as (data,addr)   (ip,port)
-                server_socket.send(data, addr)
+                print(f"addr {addr}")
+                server_socket.send(data, addr,True)
             # except Exception as e:
             #     print(f"There has been an exception as {e}")

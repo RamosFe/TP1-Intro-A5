@@ -41,7 +41,7 @@ class FileSystemUploader:
                 else:
                     with alive_bar(steps, bar="bubbles", title=f"↑ {name}") as bar:
                         for chunk in iter(lambda: file.read(self._chunk_size), b""):
-                            socket.send(chunk)
+                            socket.sendto(chunk, ('localhost', 6000))
                             bar()
 
                     bar.text("✔ Done ✔")

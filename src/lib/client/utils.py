@@ -45,19 +45,21 @@ def connect(args):
     return client_socket
 
 
-def upload_file(socket, path, name, verbose: bool,adr:str):
+def upload_file(socket, path, name, verbose: bool, adr: str):
     fs_handler = FileSystemUploader(CHUNK_SIZE)
     file_size = fs_handler.get_file_size(path)
 
     # TODO check on server side if another file has the same name, also check if the file doesn't has more than the max size
     command = Command(MessageOption.UPLOAD, name, file_size)
     print(f"before send with addr  : {adr}")
-    socket.send(command.to_str().encode(),adr)
+    print(f"About to send  : {command.to_str()}")
+    socket.send(command.to_str().encode(), adr,False)
     if verbose:
         print(
             f"-> Sending request to server to upload file {name} with size {file_size} bytes"
         )
-    
+
+    print("La queda aca")
     response = socket.recv().decode()
     print(f"response = {response}")
     command = CommandResponse(response)

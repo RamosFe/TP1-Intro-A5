@@ -10,8 +10,10 @@ from queue import Queue
 # channel, channel_receive, addr, mount_path, exit_signal_event
 def handler(channel_from_client: Queue,channel_to_sender : Queue ,addr: str, max_chunk_size: int, mount_path: str, exit_signal: Event):
     # try :
-        data = channel_from_client.get()
-        command = Command.from_str(data.decode())
+        print("handler")
+        data = channel_from_client.get()[0].replace('\x00', '') # TODO ver si hay que arreglarlo por otro lado
+        print(data)
+        command = Command.from_str(data)
         if command.option == MessageOption.UPLOAD:
             return download_file(channel_from_client, channel_to_sender, addr, max_chunk_size, mount_path, exit_signal,command)        
         elif command.option == MessageOption.DOWNLOAD:
