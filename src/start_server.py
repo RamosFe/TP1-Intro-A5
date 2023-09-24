@@ -1,5 +1,7 @@
 from threading import Thread, Event
 from typing import List, Dict, Tuple
+from downloader import download_file
+from lib.commands import Command, MessageOption
 import queue
 import socket
 
@@ -8,24 +10,28 @@ from lib.constants import (
     HARDCODED_PORT,
     HARDCODED_BUFFER_SIZE,
     HARDCODED_TIMEOUT,
+    HARDCODED_MOUNT_PATH,
 )
 
 
 def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
+    socket_to_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     while not exit_signal.is_set():
-        try:
-            data = channel.get(block=True, timeout=HARDCODED_TIMEOUT).decode()
-
-            socket_to_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            print(f"Data from {addr} received correctly {data}")
-            socket_to_client.sendto("Recibido".encode(), addr)
-
-        except queue.Empty as e:
-            if exit_signal.is_set():
-                print("Closing server due to signal")
-                return
-            else:
-                raise e
+        data = channel.get(block=True, timeout=HARDCODED_TIMEOUT).decode()
+        command = Command.from_str(data)
+        if command.option == MessageOption.UPLOAD:
+            return download_file(
+                channel,
+                socket_to_client,
+                addr,
+                HARDCODED_MOUNT_PATH,
+                exit_signal,
+                command,
+            )
+        elif command.option == MessageOption.DOWNLOAD:
+            continue
+            # ! TODO
+        # except Exception as e:
 
 
 def main(host, port):
