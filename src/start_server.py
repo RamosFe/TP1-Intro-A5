@@ -1,6 +1,7 @@
 from threading import Thread, Event
 from typing import List, Dict, Tuple
-from downloader import download_file
+from lib.server.downloader import download_file
+from lib.server.uploader import upload_file
 from lib.commands import Command, MessageOption
 import queue
 import socket
@@ -29,8 +30,14 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
                 command,
             )
         elif command.option == MessageOption.DOWNLOAD:
-            continue
-            # ! TODO
+            return upload_file(
+                channel,
+                socket_to_client,
+                addr,
+                HARDCODED_MOUNT_PATH,
+                exit_signal,
+                command,
+            )
         # except Exception as e:
 
 

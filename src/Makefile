@@ -7,4 +7,4 @@ upload:
 	python3 -m uploader -v -H 127.0.0.1 -p 6000 -s $(p) -n $(n)
 
 download:
-	python3 -m download -v -H 127.0.0.1 -p 6000 -d $(p) -n $(n)
+	python3 -m cl_downloader -v -H 127.0.0.1 -p 6000 -d $(p) -n $(n)
