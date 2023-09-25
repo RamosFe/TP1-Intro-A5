@@ -6,11 +6,12 @@ from threading import Event
 from lib.commands import Command, CommandResponse, MessageOption
 from lib.constants import HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG
 from lib.fs.fs_uploader import FileSystemUploaderServer
+from lib.rdt.socket_interface import SocketInterface
 
 
 def upload_file(
     channel: queue.Queue,
-    socket_to_client: socket.socket,
+    socket_to_client: SocketInterface,
     addr: tuple[str, int],
     mount_path: str,
     exit_signal: Event,

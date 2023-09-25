@@ -7,6 +7,9 @@ from lib.client_lib import parser, utils as parser_utils
 from lib.constants import HARDCODED_CHUNK_SIZE, HARDCODED_BUFFER_SIZE
 from lib.commands import Command, CommandResponse, MessageOption
 
+from lib.rdt.rdt_sw_socket import RdtSWSocket
+from lib.rdt.socket_interface import SocketInterface
+
 
 def main():
     """
@@ -28,9 +31,7 @@ def main():
         print(f"❌ Error: {args.dst} is a directory ❌")
         return
 
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    if client_socket is None:
-        return
+    client_socket = RdtSWSocket()
 
     print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
     download_file(client_socket, args.dst, args.name, args.verbose, args.host, args.port)
@@ -39,9 +40,7 @@ def main():
     print("Bye! See you next time 😉")
 
 
-def download_file(
-    connection: socket.socket, dest: str, name: str, verbose: bool, host: str, port: int
-):
+def download_file(connection: SocketInterface, dest: str, name: str, verbose: bool, host: str, port: int):
     """
     Download a file from a server using a UDP socket connection.
 
@@ -61,43 +60,42 @@ def download_file(
         print(f"❌ File {name} already exists ❌")
         return
 
-    with connection:
-        command = Command(MessageOption.DOWNLOAD, name, 0)
-        connection.sendto(command.to_str().encode(), (host, port))
+    command = Command(MessageOption.DOWNLOAD, name, 0)
+    connection.sendto(command.to_str().encode(), (host, port))
 
-        if verbose:
-            print(f"-> Sending request to server to download file {name}")
+    if verbose:
+        print(f"-> Sending request to server to download file {name}")
 
-        response = connection.recv(HARDCODED_BUFFER_SIZE).decode()
-        command = CommandResponse(response)
-        if command.is_error():
-            print(f"❌ Request rejected -> {command._msg} ❌")
-            return
+    response = connection.recv(HARDCODED_BUFFER_SIZE).decode()
+    command = CommandResponse(response)
+    if command.is_error():
+        print(f"❌ Request rejected -> {command._msg} ❌")
+        return
 
-        if verbose:
-            print("✔ Request accepted ✔")
+    if verbose:
+        print("✔ Request accepted ✔")
 
-        size = command.size()
+    size = command.size()
 
-        user_input = input(f"Download file {name} with size {size} bytes? [y/n]: ")
-        if user_input.lower() not in ("y", "yes"):
-            print("❌ Download canceled ❌")
-            response = CommandResponse.err_response("ERR Download canceled").to_str()
-            connection.sendto(response.encode(), (host, port))
-            return
-
-        response = CommandResponse.ok_response().to_str()
+    user_input = input(f"Download file {name} with size {size} bytes? [y/n]: ")
+    if user_input.lower() not in ("y", "yes"):
+        print("❌ Download canceled ❌")
+        response = CommandResponse.err_response("ERR Download canceled").to_str()
         connection.sendto(response.encode(), (host, port))
+        return
 
-        if verbose:
-            print(f"-> Downloading file {name} with name {dest}")
+    response = CommandResponse.ok_response().to_str()
+    connection.sendto(response.encode(), (host, port))
 
-        fs_handler.download_file(connection, dest, size, Event())
+    if verbose:
+        print(f"-> Downloading file {name} with name {dest}")
 
-        if verbose:
-            print(f"✔ File {name} downloaded successfully ✔")
+    fs_handler.download_file(connection, dest, size, Event())
 
-        connection.close()
+    if verbose:
+        print(f"✔ File {name} downloaded successfully ✔")
+
+    connection.close()
 
 
 if __name__ == "__main__":

@@ -2,6 +2,8 @@ import os
 import socket
 from threading import Event
 
+from lib.rdt.socket_interface import SocketInterface
+
 
 class FileSystemUploaderServer:
     """
@@ -41,7 +43,7 @@ class FileSystemUploaderServer:
 
     def upload_file(
         self,
-        sender: socket.socket,
+        sender: SocketInterface,
         addr: tuple[str, int],
         path: str,
         name: str,

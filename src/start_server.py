@@ -14,6 +14,9 @@ from lib.constants import (
     HARDCODED_MOUNT_PATH,
 )
 
+from lib.rdt.rdt_sw_socket import RdtSWSocket
+from lib.rdt.socket_interface import SocketInterface
+
 
 def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
     """
@@ -27,7 +30,7 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
     Returns:
         None
     """
-    socket_to_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    socket_to_client = RdtSWSocket()
     while not exit_signal.is_set():
         data = channel.get(block=True, timeout=HARDCODED_TIMEOUT).decode()
         command = Command.from_str(data)
@@ -63,7 +66,7 @@ def main(host, port):
     """
     exit_signal_event = Event()
 
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket = RdtSWSocket()
     server_socket.bind((host, port))
 
     # State variables
@@ -105,7 +108,7 @@ def main(host, port):
 
 
 def close_server(
-    exit_signal_event: Event, clients: List[Thread], server_socket: socket.socket
+    exit_signal_event: Event, clients: List[Thread], server_socket: SocketInterface
 ):
     """
     Closes the server gracefully.

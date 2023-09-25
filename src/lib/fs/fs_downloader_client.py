@@ -6,6 +6,7 @@ from threading import Event
 from alive_progress import alive_bar
 
 from lib.constants import HARDCODED_BUFFER_SIZE, UPLOAD_FINISH_MSG
+from lib.rdt.socket_interface import SocketInterface
 
 
 class FileSystemDownloaderClient:
@@ -47,7 +48,7 @@ class FileSystemDownloaderClient:
         return os.path.exists(os.path.join(self._mount_path, filename))
 
     def download_file(
-        self, socket: socket.socket, path: str, size: int, exit_signal: Event
+        self, socket: SocketInterface, path: str, size: int, exit_signal: Event
     ):
         """
         Download a file from a socket and save it to the specified path with progress.

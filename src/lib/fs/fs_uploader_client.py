@@ -2,6 +2,8 @@ import os
 import math
 from alive_progress import alive_bar
 
+from lib.rdt.socket_interface import SocketInterface
+
 
 class FileSystemUploaderClient:
     """
@@ -36,7 +38,7 @@ class FileSystemUploaderClient:
         """
         return os.path.getsize(path)
 
-    def upload_file(self, sender, addr, path: str, name: str, verbose: bool):
+    def upload_file(self, sender: SocketInterface, addr, path: str, name: str, verbose: bool):
         """
         Upload a file to a server.
 

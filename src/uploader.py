@@ -8,6 +8,9 @@ from lib.client_lib import utils as parser_utils
 from lib.client_lib import parser
 from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG
 
+from lib.rdt.rdt_sw_socket import RdtSWSocket
+
+
 def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     """
     Main function to upload a file to a server.
@@ -27,7 +30,7 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     file_size = fs_handler.get_file_size(path=path)
 
     # Creates the client socket
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client_socket = RdtSWSocket()
 
     # Creates the upload command and sends it
     command = Command(MessageOption.UPLOAD, name, file_size)
