@@ -3,14 +3,26 @@ import socket
 from typing import Tuple
 
 from lib.commands import Command, MessageOption, CommandResponse
-from lib.fs.fs_uploader import FileSystemUploader
-from lib.client_lib import parser as ps
+from lib.fs.fs_uploader_client import FileSystemUploaderClient
+from lib.client_lib import utils as parser_utils
+from lib.client_lib import parser
 from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG
 
-
 def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
+    """
+    Main function to upload a file to a server.
+
+    Args:
+        name (str): The name of the file to be uploaded.
+        path (str): The path to the file on the local system.
+        addr (Tuple[str, int]): A tuple containing the server's address (hostname or IP) and port.
+        verbose (bool): Whether to print verbose output.
+
+    Returns:
+        None
+    """
     # Creates the upload handler
-    fs_handler = FileSystemUploader(HARDCODED_CHUNK_SIZE)
+    fs_handler = FileSystemUploaderClient(HARDCODED_CHUNK_SIZE)
     # Get the file size
     file_size = fs_handler.get_file_size(path=path)
 
@@ -48,11 +60,11 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
 
 
 if __name__ == "__main__":
-    args = ps.parse_arguments("upload")
-    if not ps.verify_params(args, "upload"):
+    args = parser.parse_arguments("upload")
+    if not parser_utils.verify_params(args, "upload"):
         print("❌ Error: missing required argument(s) ❌")
         args.print_help()
     elif not (os.path.exists(args.src) and os.path.isfile(args.src)):
-        print(f"❌ Error: file {args.src} does not exists ❌")
+        print(f"❌ Error: file {args.src} does not exist ❌")
     else:
         main(args.name, args.src, (args.host, args.port), args.verbose)

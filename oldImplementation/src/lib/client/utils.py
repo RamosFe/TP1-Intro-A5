@@ -5,7 +5,7 @@ from threading import Event
 from src.lib.commands import Command, MessageOption, CommandResponse
 from src.lib.constants import BUFFER_SIZE, CHUNK_SIZE, UPLOAD_FINISH_MSG
 from src.lib.fs.fs_uploader import FileSystemUploader
-from src.lib.fs.fs_downloader import FileSystemDownloader
+from src.lib.fs.fs_downloader import FileSystemDownloaderServer
 from src.rdt_stop_and_wait import RdtWSSocket
 
 
@@ -79,7 +79,7 @@ def upload_file(socket, path, name, verbose: bool, adr: str):
 
 
 def download_file(connection: socket.socket, dest: str, name: str, verbose: bool):
-    fs_handler = FileSystemDownloader("./", CHUNK_SIZE)
+    fs_handler = FileSystemDownloaderServer("./", CHUNK_SIZE)
     if fs_handler.file_exists(filename=name):
         print(f"❌ File {name} already exists ❌")
         return

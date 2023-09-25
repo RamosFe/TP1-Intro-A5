@@ -4,7 +4,7 @@ from src.rdt_stop_and_wait import RdtWSSocket
 from src.lib.commands import Command, CommandResponse, MessageOption
 from src.lib.server.download import download_file
 from src.lib.server.upload import upload_file
-from src.lib.fs.fs_downloader import FileSystemDownloader
+from src.lib.fs.fs_downloader import FileSystemDownloaderServer
 from queue import Queue
 
 # channel, channel_receive, addr, mount_path, exit_signal_event

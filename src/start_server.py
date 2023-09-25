@@ -1,11 +1,11 @@
+import queue
+import socket
 from threading import Thread, Event
 from typing import List, Dict, Tuple
+
 from lib.server_lib.downloader import download_file
 from lib.server_lib.uploader import upload_file
 from lib.commands import Command, MessageOption
-import queue
-import socket
-
 from lib.constants import (
     HARDCODED_HOST,
     HARDCODED_PORT,
@@ -16,6 +16,17 @@ from lib.constants import (
 
 
 def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
+    """
+    Handles incoming messages from clients and delegates the appropriate action.
+
+    Args:
+        channel (queue.Queue): A queue for receiving messages from the client.
+        addr (Tuple[str, int]): A tuple containing the client's address (hostname or IP) and port.
+        exit_signal (Event): An event signaling the termination of the handler.
+
+    Returns:
+        None
+    """
     socket_to_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     while not exit_signal.is_set():
         data = channel.get(block=True, timeout=HARDCODED_TIMEOUT).decode()
@@ -38,10 +49,18 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
                 exit_signal,
                 command,
             )
-        # except Exception as e:
-
 
 def main(host, port):
+    """
+    Main function to start the server and handle incoming client requests.
+
+    Args:
+        host (str): The hostname or IP address the server should bind to.
+        port (int): The port number the server should listen on.
+
+    Returns:
+        None
+    """
     exit_signal_event = Event()
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -88,6 +107,17 @@ def main(host, port):
 def close_server(
     exit_signal_event: Event, clients: List[Thread], server_socket: socket.socket
 ):
+    """
+    Closes the server gracefully.
+
+    Args:
+        exit_signal_event (Event): An event to signal the termination of the handler threads.
+        clients (List[Thread]): A list of active client handler threads.
+        server_socket (socket.socket): The server socket to close.
+
+    Returns:
+        None
+    """
     exit_signal_event.set()
     for client in clients:
         client.join()
