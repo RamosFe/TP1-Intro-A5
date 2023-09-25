@@ -9,7 +9,7 @@ HARDCODED_BUFFER_SIZE = 1024
 HARDCODED_TIMEOUT = 4
 
 # Chunk size for file transfer
-HARDCODED_CHUNK_SIZE = 200
+HARDCODED_CHUNK_SIZE = 1
 
 # Message indicating the end of an upload
 UPLOAD_FINISH_MSG = "FINARDO"
