@@ -1,5 +1,4 @@
-from lib.client import parser as ps
-from lib.client import utils as ut
+from lib.client_lib import parser as ps, utils as ut
 from lib.fs.fs_downloader_client import FileSystemDownloaderClient
 import os
 import socket

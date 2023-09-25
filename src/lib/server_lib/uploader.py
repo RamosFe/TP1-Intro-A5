@@ -4,7 +4,7 @@ import os
 from threading import Event
 from lib.commands import Command, CommandResponse, MessageOption
 from lib.constants import HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG
-from lib.fs.fs_uploader_server import FileSystemUploaderServer
+from lib.fs.fs_uploader import FileSystemUploaderServer
 
 
 def upload_file(

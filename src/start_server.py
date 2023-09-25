@@ -1,7 +1,7 @@
 from threading import Thread, Event
 from typing import List, Dict, Tuple
-from lib.server.downloader import download_file
-from lib.server.uploader import upload_file
+from lib.server_lib.downloader import download_file
+from lib.server_lib.uploader import upload_file
 from lib.commands import Command, MessageOption
 import queue
 import socket

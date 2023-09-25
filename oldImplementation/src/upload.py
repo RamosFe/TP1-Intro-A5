@@ -1,5 +1,4 @@
-from src.lib.client import parser as ps
-from src.lib.client import utils as ut
+from lib.client_lib import parser as ps, utils as ut
 import os
 
 

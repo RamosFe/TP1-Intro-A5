@@ -4,7 +4,7 @@ from typing import Tuple
 
 from lib.commands import Command, MessageOption, CommandResponse
 from lib.fs.fs_uploader import FileSystemUploader
-from lib.client import parser as ps
+from lib.client_lib import parser as ps
 from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG
 
 

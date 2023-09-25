@@ -1,25 +1,33 @@
 import os
-import math
+import socket
 from alive_progress import alive_bar
+from threading import Event
 
 
-class FileSystemUploader:
+class FileSystemUploaderServer:
     def __init__(self, chunk_size: int):
         self._chunk_size = chunk_size
 
     def get_file_size(self, path: str) -> int:
         return os.path.getsize(path)
 
-    def upload_file(self, sender, addr, path: str, name: str, verbose: bool):
+    def upload_file(
+        self,
+        sender: socket.socket,
+        addr: tuple[str, int],
+        path: str,
+        name: str,
+        verbose: bool,
+        exit_signal: Event,
+    ):
         # TODO Handle Errors
         with open(path, "rb") as file:
-            steps = math.ceil(self.get_file_size(path) / self._chunk_size)
             if verbose:
                 print(f"-> Uploading file {name}")
 
-            with alive_bar(steps, bar="bubbles", title=f"↑ {name}") as bar:
-                for chunk in iter(lambda: file.read(self._chunk_size), b""):
+            for chunk in iter(lambda: file.read(self._chunk_size), b""):
+                if exit_signal.is_set():
                     sender.sendto(chunk, addr)
-                    bar()
-
-            bar.text("✔ Done ✔")
+                    print("Closing server due to signal")
+                    break
+                sender.sendto(chunk, addr)
