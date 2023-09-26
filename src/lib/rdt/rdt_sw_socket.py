@@ -1,7 +1,7 @@
 import socket
 import queue
-from lib.constants import HARDCODED_BUFFER_SIZE,HARDCODED_CHUNK_SIZE,HARDCODED_HOST,HARDCODED_MOUNT_PATH,HARDCODED_PORT,HARDCODED_TIMEOUT
 import math
+from lib.constants import HARDCODED_BUFFER_SIZE,HARDCODED_CHUNK_SIZE,HARDCODED_HOST,HARDCODED_MOUNT_PATH,HARDCODED_PORT,HARDCODED_TIMEOUT
 from lib.rdt.counter import ModuleNCounter
 class RdtSWSocket:
     """
@@ -112,16 +112,14 @@ class RdtSWSocketClient:
             addr (tuple[str, int]): A tuple containing the destination host address (str) and port number (int).
         """
 
-
         packets_len = math.ceil(len(data) / HARDCODED_CHUNK_SIZE) 
-        
         counter = ModuleNCounter(2)
-        
         for i in range(packets_len):
             print("--DEBUG-- sending data chunk ",i)
-            data_chunk = data[i * HARDCODED_CHUNK_SIZE : (i + 1) * HARDCODED_CHUNK_SIZE] # No puede dar error en python si nos excedemos
-            data_chunk = str(counter.get_value()) + data_chunk    
-            self._internal_socket.sendto(data_chunk.encode(),addr)
+            chunk = data[i * HARDCODED_CHUNK_SIZE : (i + 1) * HARDCODED_CHUNK_SIZE] # No puede dar error en python si nos excedemos
+            data_packet = RDTStopWaitPacket(str(counter.get_value()),chunk.encode())
+            
+            self._internal_socket.sendto(data_packet.encode(),addr)
             receive_addr = None
             while True:
                 while receive_addr != addr:
@@ -129,9 +127,8 @@ class RdtSWSocketClient:
                     print(f"--DEBUG-- i received {receive.decode()} from addr {receive_addr} when addr {addr} ")
                 if receive.decode() != str(counter.get_value()):
                     print(f"--DEBUG-- i received {receive.decode()} and counter {counter.get_value()}")
-                    self._internal_socket.sendto(data_chunk.encode(),addr) 
+                    self._internal_socket.sendto(data_packet.packet.encode(),addr) 
                     continue  
-
                 counter.increment()
                 break
             
@@ -151,13 +148,11 @@ class RdtSWSocketClient:
         counter = ModuleNCounter(2)
         while True:
             data,addr = self._internal_socket.recvfrom(bufsize)
-            data = data.decode()
-            print("--DEBUG-- i RECEIVED" )
-            ack = str(counter.get_value())
-            message = data[1:]
-            self._internal_socket.sendto(ack.encode(), addr)
+            packet = RDTStopWaitPacket.from_bytes(data)
+
+            self._internal_socket.sendto(packet.to_send(counter.get_value()), addr)
             counter.increment()
-            print(f"Data: {message} ACK: {ack}")
+            print(f"Data: {packet.data} ACK: {packet.ack}")
 
     def recvfrom(self, bufsize: int) -> tuple[bytes, tuple[str, int]]:
         """
@@ -178,3 +173,27 @@ class RdtSWSocketClient:
         """
         self._internal_socket.close()
 
+
+
+class RDTStopWaitPacket:
+
+
+    def __init__(self,ack: str,data: [bytes]):
+        
+        self.data  = data
+        self.ack = ack   
+
+    @classmethod
+    def from_bytes(cls,data: [bytes]):
+        data = data.decode()
+        ack = data[0]
+        message = data[1:]
+        
+        return cls(ack,message)
+    
+    def encode(self):
+        return (self.ack.encode() + self.data)
+    
+    def to_send(self,ack: int):
+        return str(ack).encode()
+    
