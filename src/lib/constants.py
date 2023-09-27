@@ -5,11 +5,12 @@ HARDCODED_PORT = 6000
 # Buffer size for socket communication
 HARDCODED_BUFFER_SIZE = 1024
 
-# Timeout for certain operations
-HARDCODED_TIMEOUT = 4
+# Timeout for certain operations in seconds
+HARDCODED_TIMEOUT = 1
+HARDCODED_MAX_TIMEOUT_TRIES = 4
 
 # Chunk size for file transfer
-HARDCODED_CHUNK_SIZE = 1
+HARDCODED_CHUNK_SIZE = 1024
 
 # Message indicating the end of an upload
 UPLOAD_FINISH_MSG = "FINARDO"

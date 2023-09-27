@@ -21,7 +21,7 @@ class ModuleNCounter:
         """
         Increment the counter value and wrap around if it reaches the modulo value.
         """
-        self._value = (self._value + 1) % self._n
+        self._value = self.next()
 
     def reset(self):
         """Reset the counter value to 0."""
@@ -35,3 +35,6 @@ class ModuleNCounter:
             int: The current counter value.
         """
         return self._value
+
+    def next(self) -> int:
+        return (self._value + 1) % self._n
