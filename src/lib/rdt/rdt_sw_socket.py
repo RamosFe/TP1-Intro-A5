@@ -127,7 +127,7 @@ class RdtSWSocketClient:
         self._internal_socket.settimeout(HARDCODED_TIMEOUT) 
         
         # Por cada chunk
-        for i in range(packets_len + 1):
+        for i in range(packets_len):
             #
             print("--DEBUG-- sending data chunk ",i)
             # Obtengo el chunk
