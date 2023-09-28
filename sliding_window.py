@@ -2,12 +2,8 @@ import socket
 import threading
 import time
 
-
-
 TIME_WAIT = 0.2
 TOP_TIMEOUTS = 5
-
-
 
 class SlidingWindow:
     def __init__(self, window_size, socket):
