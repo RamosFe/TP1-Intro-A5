@@ -34,7 +34,7 @@ class ModuleNCounter:
         Returns:
             int: The current counter value.
         """
-        return self._value
+        return int(self._value)
 
     def next(self) -> int:
         return (self._value + 1) % self._n

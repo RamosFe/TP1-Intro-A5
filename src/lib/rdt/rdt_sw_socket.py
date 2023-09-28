@@ -134,7 +134,7 @@ class RdtSWSocketClient:
             chunk = data[i * HARDCODED_CHUNK_SIZE : (i + 1) * HARDCODED_CHUNK_SIZE] # No puede dar error en python si nos excedemos
             
             # Parseo el paquete
-            data_packet = RDTStopWaitPacket(str(counter.get_value()),chunk)
+            data_packet = RDTStopWaitPacket(counter.get_value(),chunk)  # Al generar el paquete, lo generamos en bytes
             # Envio el paquete a la dirección
             self._internal_socket.sendto(data_packet.to_send(),addr)
             try:
@@ -167,10 +167,9 @@ class RdtSWSocketClient:
                     self._internal_socket.sendto(data_packet.to_send(),addr)
 
             # Caso que el sequence number es distinto al esperado
-            print(f"--DEBUG-- i received {receive.decode()} and counter {counter.get_value()} t")
-            if receive.decode() != str(counter.get_value()):
+            if int.from_bytes(receive, byteorder='big') != counter.get_value():
                 # time.sleep(2)   
-                print(f"--DEBUG-- i received {receive.decode()} and counter {counter.get_value()}")
+                print(f"--DEBUG-- i received {int.from_bytes(receive, byteorder='big')} and counter {counter.get_value()}")
                 self._internal_socket.sendto(data_packet.to_send(),addr) 
                 continue
             
@@ -199,8 +198,9 @@ class RdtSWSocketClient:
         data,addr = self._internal_socket.recvfrom(bufsize)
         packet = RDTStopWaitPacket.from_bytes(data)
 
-        print(f"--DEBUG-- counter_value {self.counter.get_value()} and ack is {packet.ack_as_number()}")
-        if self.counter.get_value() == packet.ack_as_number():
+        print(f"--DEBUG-- counter_value {self.counter.get_value()} and ack is {packet.ack}")
+
+        if self.counter.get_value() == packet.ack:
             self._internal_socket.sendto(packet.encode_ack(self.counter.get_value()), addr)
             self.counter.increment()
         else:
@@ -251,17 +251,16 @@ class TimeOutErrors:
 
 class RDTStopWaitPacket:
 
-    def __init__(self,ack: str,data):
+    def __init__(self,ack: int,data):
 
         self.data = self._to_bytes(data)
-        self.ack = ack.encode()  
+        self.ack = ack
 
     @classmethod
     def from_bytes(cls,data: bytes):
-        ack = str(int(data[0]))
+        ack = data[0]
         message = data[1:]
         return cls(ack,message)
-    
     
     def _to_bytes(self,data):
         if not type(data) == bytes:
@@ -269,16 +268,7 @@ class RDTStopWaitPacket:
         return data
 
     def to_send(self):
-        return (self.ack + self.data)
+        return (self.encode_ack(self.ack) + self.data)
     
     def encode_ack(self, ack: int):
-        return str(ack).encode()
-    
-    def ack_as_number(self):
-        if self.ack == b'48':
-            return 0
-        elif self.ack == b'49':
-            return 1
-        else:
-            return int(self.ack)
-    
+        return ack.to_bytes(1, byteorder='big')
