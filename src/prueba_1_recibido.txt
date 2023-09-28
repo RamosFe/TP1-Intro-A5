@@ -1,0 +1,41 @@
+UPLOAD:foto.webp:38000El presente trabajo práctico tiene como objetivo la creación de una aplicación de red. Para tal finalidad, será necesario
+comprender cómo se comunican los procesos a través de la red, y cuál es el modelo de servicio que la capa de transporte
+le ofrece a la capa de aplicación. Además, para poder lograr el objetivo planteado, se aprenderá el uso de la interfaz de
+sockets y los principios básicos de la transferencia de datos confiable (del inglés Reliable Data Transfer, RDT).
+Palabras clave— Socket, protocolo, tcp, udp
+1.
+Propuesta de trabajo
+Este trabajo práctico se plantea como objetivo la comprensión y la puesta en práctica de los conceptos y herramientas
+necesarias para la implementación de un protocolo RDT. Para lograr este objetivo, se deberá desarrollar una aplicación
+de arquitectura cliente-servidor que implemente la funcionalidad de transferencia de archivos mediante las siguientes
+operaciones:
+UPLOAD: Transferencia de un archivo del cliente hacia el servidor
+DOWNLOAD: Transferencia de un archivo del servidor hacia el cliente
+Dada las diferentes operaciones que pueden realizarse entre el cliente y el servidor, se requiere del diseño e implemen-
+tación de un protocolo de aplicación básico que especifique los mensajes intercambiados entre los distintos procesos.
+2.
+Herramientas a utilizar y procedimientos
+La implementación de las aplicaciones solicitadas deben cumplir los siguientes requisitos:
+La aplicaciones deben ser desarrolladas en lenguaje Python [1] utilizando la librería estandard de sockets [2].
+La comunicación entre los procesos se debe implementar utilizando UDP como protocolo de capa de transporte.
+Las aplicaciones cliente/servidor pueden ser desplegadas en localhost.
+Para lograr una transferencia confiable al utilizar el protocolo UDP, se pide implementar una versión utilizando el
+protocolo Stop & Wait y otra versión utilizando el protocolo Selective Repeat.
+El servidor debe ser capaz de procesar de manera concurrente la transferencia de archivos con múltiples clientes.
+El protocolo implementado debe contemplar condiciones de error.
+Para poder validar que el protocolo desarrollado provee garantía de entrega es necesario forzar la pérdida de paquetes.
+Para poder simular distintas condiciones de red se pide utilizar la herramienta comcast[3]. En el repositorio de comcast
+se encuentran las instrucciones de instalación. La herramienta esta escrita en Go, por lo que se requiere instalar Go en
+primer lugar.
+A modo de ejemplo, en el listado 1 se muestra la simulación de una tasa de perdida de paquetes del 10 %:
+1$ comcast -- device = lo0 -- packet - loss =10 %
+Listing 1: Simulación de pérdida de paquetes mediante comcast
+Una vez que terminada la simulación, se debe detener comcast para desactivar las reglas setteadas. El listado 2 muestra
+la finalización de la simulación:
+comcast -- stop
+Listing 2: Fin de la simulación de pérdida de paquetes
+2.1.
+Interfaz del cliente
+La funcionalidad del cliente se divide en dos aplicaciónes de línea de comandos: upload y download. El comando
+upload envía un archivo al servidor para ser guardado con el nombre asignado. El listado 3 especifica la interfaz de linea
+de comandos para la operación de upload:
