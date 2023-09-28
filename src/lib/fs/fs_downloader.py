@@ -63,9 +63,8 @@ class FileSystemDownloaderServer:
             try:
                 while not exit_signal.is_set():
                     data = channel.get(block=True, timeout=HARDCODED_TIMEOUT)
-                    if UPLOAD_FINISH_MSG in data.decode():
-                        file.write(data[: data.decode().index(UPLOAD_FINISH_MSG)])
-                        break
+                    if UPLOAD_FINISH_MSG.encode() in data:
+                        file.write(data[:data.index(UPLOAD_FINISH_MSG.encode())])
 
                     file.write(data)
             except queue.Empty as e:
