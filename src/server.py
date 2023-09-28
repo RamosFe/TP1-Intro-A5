@@ -10,6 +10,7 @@ socket_server.bind(('localhost', 6000))
 with open('prueba_1.webp', 'wb') as file:
     while True:
         data = socket_server.recv(HARDCODED_BUFFER_SIZE)
-        print(data)
+        if data is None:
+            continue
         file.write(data)
     

@@ -5,12 +5,12 @@ from threading import Event
 from lib.commands import Command, CommandResponse
 from lib.constants import HARDCODED_CHUNK_SIZE
 from lib.fs.fs_downloader import FileSystemDownloaderServer
-from lib.rdt.socket_interface import SocketInterface
+from lib.rdt.rdt_sw_socket import RdtSWSocket
 
 
 def download_file(
     channel: queue.Queue,
-    socket_to_client: SocketInterface,
+    socket_to_client: RdtSWSocket,
     addr: tuple[str, int],
     mount_path: str,
     exit_signal: Event,

@@ -8,7 +8,7 @@ HARDCODED_TIMEOUT = 1
 HARDCODED_MAX_TIMEOUT_TRIES = 4
 
 # Chunk size for file transfer
-HARDCODED_CHUNK_SIZE = 1024
+HARDCODED_CHUNK_SIZE = 20
 
 # Size of the packet headers, is 1 on S&W
 PACKET_HEADER_SIZE = 1
