@@ -167,7 +167,8 @@ class RdtSWSocketClient:
                     self._internal_socket.sendto(data_packet.to_send(),addr)
 
             # Caso que el sequence number es distinto al esperado
-            if int.from_bytes(receive, byteorder='big') != counter.get_value():
+            ack_receive = AckSequenceNumer.from_bytes(receive)
+            if ack_receive.ack != counter.get_value():
                 # time.sleep(2)   
                 print(f"--DEBUG-- i received {int.from_bytes(receive, byteorder='big')} and counter {counter.get_value()}")
                 self._internal_socket.sendto(data_packet.to_send(),addr) 
@@ -248,13 +249,12 @@ class TimeOutErrors:
 
 
 
-
 class RDTStopWaitPacket:
 
-    def __init__(self,ack: int,data):
+    def __init__(self, ack: int,data):
 
         self.data = self._to_bytes(data)
-        self.ack = ack
+        self._ack = AckSequenceNumer(ack)
 
     @classmethod
     def from_bytes(cls,data: bytes):
@@ -268,7 +268,27 @@ class RDTStopWaitPacket:
         return data
 
     def to_send(self):
-        return (self.encode_ack(self.ack) + self.data)
+        return (self._ack.encode() + self.data)
     
     def encode_ack(self, ack: int):
-        return ack.to_bytes(1, byteorder='big')
+        return AckSequenceNumer(ack).encode()
+
+    @property
+    def ack(self):
+        return self._ack.ack
+
+    @ack.setter
+    def ack(self, ack):
+        self._ack = AckSequenceNumer(ack)
+    
+class AckSequenceNumer:
+    def __init__(self, ack: int):
+        self.ack = ack
+    
+    def encode(self):
+        return self.ack.to_bytes(1, byteorder='big')
+
+    @classmethod
+    def from_bytes(cls, data):
+        ack = data[0]
+        return cls(ack)
