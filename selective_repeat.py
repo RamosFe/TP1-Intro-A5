@@ -1,53 +1,136 @@
+from math import ceil
 import socket
 import threading
+from packet import Packet
+from receiver_window import ReceiverWindow
 from sliding_window import SlidingWindow
 from queue import *
 
-class SelectiveRepeatRDT:
-    _window = None
-    _socket = None
-    _send_queue = None
-    _received_queque = None
-    _ack_queue = None
+PACKET_SIZE = 10
+
+class SenderSR:
     _sender = None
-    _receiver = None
+    _window = None
+    _response_queue = None
+    _seq_num = None
+    _ack_queue = None
 
-    def __init__(self, window_size, socket, queue):
-        self._window = SlidingWindow(window_size, socket)
-        self._socket = socket
-        self._send_queue = queue
-        self._ack_queue = Queue()
-        self._sender = threading.Thread(target=self._send_packets, args=(self._send_queue,))
-        self._receiver = threading.Thread(target=self._receive_packets, args=(self._socket,))
+    def __init__(self, window_size, response_queue, ack_queue, socket, addr):
+        self._window = SlidingWindow(window_size,socket)
+        self._response_queue =  response_queue
+        self._sender = threading.Thread(target=self._send_packets, args=(self._response_queue,socket))
+        self._ack_queue = ack_queue
         self._sender.start()
-        self._receiver.start()
-    
-    def send(self, data, address):
-        packets = self._make_packets(data, address)
-        for packet in packets:
-            self._send_queue.put(packet)
-    
-    def _make_packets(self, data, address):
-        # crear una lista de paquetes a partir de los datos
-        pass
+        self._seq_num = 0
+        self._socket = socket
+        self._addr = addr
 
-    def _send_packets(self, queue):
+        
+
+    def _make_packets(self, data) -> list:
+        # crear una lista de paquetes a partir de los datos
+        n_packets = ceil(len(data) / PACKET_SIZE)
+        packets = []
+        for i in range(1, n_packets + 1, 1):
+            packet = Packet(self._seq_num + i,data[(i-1) * PACKET_SIZE : i * PACKET_SIZE])
+            packets.append(packet)
+        self._seq_num = self._seq_num + n_packets
+        return packets
+        #puede pasar que se generen paquetes con un seq numb que desp no se pueden enviar porque 
+        #la window esta llena, quizás hay q revisar este caso (ej no mandar toda la data o mandar
+        #solo los paquetes que entren en la window)
+
+    def check_ack_queue(self):
+        while not self._ack_queue.empty():            
+            ack_num = self._ack_queue.get()
+            with open("client_log.txt", "a") as f:
+                f.write(f"Received ack: {ack_num}\n")
+            self._window.receive_ack(ack_num)
+
+    def _send_packets(self, response_queue, socket):
         while True:
-            packet = queue.get()
+            packet = response_queue.get() # Esto seria response_queue
             if packet is None:
                 continue
            
+            #If the sliding window is full, keep checking for ack of packets
             while not self._window.add_packet(packet):
-            # If there is no space, receive an ACK and move the self._window base forward
-            # TODO bloquear hasta que haya un ACK.? fijase si esta lockeando o no.
-                while not self._ack_queue.empty():            
-                    ack_num = self._ack_queue.get()
-                    with open("client_log.txt", "a") as f:
-                        f.write(f"Received ack: {ack_num}\n")
-                    
-                    self._window.receive_ack(ack_num)
+                self.check_ack_queue()
                 
-                self._socket.sendto(packet.into_bytes(), packet.dest())
+            socket.sendto(packet.into_bytes(),self._addr)
+            self.check_ack_queue()
+
+class ReceiverSR:
+    _receiver = None
+    _window = None
+    _data_queue = None
+    _ack_queue = None
+    _msg_queue = None
+
+    def __init__(self, window_size, data_queue, ack_queue, msg_queue):
+        self._window = ReceiverWindow(window_size)
+        self._ack_queue = ack_queue
+        self._data_queue = data_queue
+        self._msg_queue = msg_queue
+        self._receiver = threading.Thread(target=self._receive_packets, args=(self._data_queue))
+        self._receiver.start()
+
+    def _receive_packets(self, data_queue):
+        while True:
+            packet = data_queue.get()
+
+            if packet is None:
+                continue 
+            #ver si el packet es ACK O mensaje, 
+            #si es mensaje -> receive window,
+            #si es ack -> ACK queue
+            if packet.is_ack():
+                self._ack_queue.put()
+                continue
+            self._window.add_packet(packet)
+            packets = self._window.get_ordered_packets()
+            for pkt in packets:
+                self._msg_queue.put(pkt)
+            
+
+class SelectiveRepeatRDT:
+    _socket = None
+    _sender = None
+    _receiver = None
+
+    def __init__(self, window_size, data_queue, socket, addr):
+        self._socket = socket
+        ack_queue = Queue()
+        self._response_queue = Queue()
+        self._sender = SenderSR(window_size,self._response_queue , ack_queue,socket,addr) #sender sliding window
+        self._msg_queue = Queue()
+        self._receiver = ReceiverSR(window_size,data_queue, ack_queue, self._msg_queue) # receiver window
+
+    
+    '''Recibe el mensaje de capa de aplicación para ser desarmado en paquetes y enviado al destinatario'''
+    def send_message(self, data):
+        # Primero armamos los paquetes a partir de la data.
+        packets = self._sender._make_packets(data)
+        for packet in packets:
+            self._response_queue.put(packet)
+        
+    '''Devuelve un mensaje hacia la capa de aplicación '''
+    def receive_message(self) -> str:
+        message = ""
+        packets = self.get_packets()
+        for packet in packets:
+            message += packet.get_data()
+        
+        return message
+    
+    def get_packets(self) -> list:
+        packets = []
+        while not self._msg_queue.empty():
+            packet = Packet.from_bytes(self._msg_queue.get())
+            packets.append(packet)
+        return packets
+    
+    
     
     # def _receive_packets(self, socket):
     #     hashed_buffer = {} # usada para darle al usuario paquetes en orden

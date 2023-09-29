@@ -19,8 +19,9 @@ class SlidingWindow:
             packet.timer.start()
             self.buffer.append(packet)
             return True
+        print(f"len buffer {len(self.buffer)} y window_size: {self.window_size}")
         with open("client_log.txt", "a") as f:
-                    f.write(f"Cannot add Pkt:{packet.seq_num} window is full \n")
+            f.write(f"Cannot add Pkt:{packet.seq_num} window is full \n")
         
         time.sleep(0.3)
         return False
@@ -65,3 +66,4 @@ class SlidingWindow:
                         break
                     self.buffer.pop(0)
                     self.base_seq_num += 1
+
