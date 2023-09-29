@@ -68,9 +68,9 @@ class FileSystemDownloaderClient:
                 try:
                     while not exit_signal.isSet():
                         data = socket.recv(HARDCODED_BUFFER_SIZE)
-                        bar()
                         if UPLOAD_FINISH_MSG.encode() in data:
                             return # End of file
+                        bar()
                         file.write(data)
                 except queue.Empty as e:
                     if exit_signal.is_set():
