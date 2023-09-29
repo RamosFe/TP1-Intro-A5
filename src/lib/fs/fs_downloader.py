@@ -1,7 +1,7 @@
 import os
 import queue
 from threading import Event
-
+from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 from lib.constants import UPLOAD_FINISH_MSG, HARDCODED_TIMEOUT
 
 
@@ -43,7 +43,7 @@ class FileSystemDownloaderServer:
         """
         return os.path.exists(os.path.join(self._mount_path, filename))
 
-    def download_file(self, channel: queue.Queue, path: str, exit_signal: Event):
+    def download_file(self, channel: queue.Queue,socket: RdtSWSocketClient, path: str, exit_signal: Event):
         """
         Download a file from a queue channel and save it to the specified path.
 
@@ -62,10 +62,10 @@ class FileSystemDownloaderServer:
         with open(os.path.join(self._mount_path, path), "wb") as file:
             try:
                 while not exit_signal.is_set():
-                    data = channel.get(block=True, timeout=HARDCODED_TIMEOUT)
+                    
+                    data = socket.recv_with_queue(channel)
                     if UPLOAD_FINISH_MSG.encode() in data:
                         file.write(data[:data.index(UPLOAD_FINISH_MSG.encode())])
-
                     file.write(data)
             except queue.Empty as e:
                 if exit_signal.is_set():

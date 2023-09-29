@@ -34,7 +34,7 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
 
     # Creates the upload command and sends it
     command = Command(MessageOption.UPLOAD, name, file_size)
-    client_socket.sendto(command.to_str().encode(), addr)
+    client_socket._internal_socket.sendto(command.to_str().encode(), addr)
 
     # Log the command if verbose
     if verbose:
@@ -43,9 +43,9 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
         )
 
     # Wait for server response and check the type of response
-    response = client_socket.recv(HARDCODED_BUFFER_SIZE).decode()
+    response = client_socket._internal_socket.recv(HARDCODED_BUFFER_SIZE).decode()
+    print("-> Server response: ", response)
     response_command = CommandResponse(response)
-
     # If error, return
     if response_command.is_error():
         print(f"❌ Request rejected -> {response_command._msg} ❌")
@@ -55,11 +55,19 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
         print("✔ Request accepted ✔")
 
     # Else, send the file using the uploader
-    fs_handler.upload_file(client_socket, addr, path, name, verbose)
+    try:
+        fs_handler.upload_file(client_socket, addr, path, name, verbose)
+    except TimeoutError:
+        print("❌ Error: Connecction error, maximun times tried ❌")
+        return
+
     if verbose:
         print(f"✔ File {name} uploaded successfully ✔")
 
-    client_socket.sendto(UPLOAD_FINISH_MSG.encode(), addr)
+    try:
+        client_socket.sendto(UPLOAD_FINISH_MSG.encode(), addr)
+    except TimeoutError:
+        print("❌ Error: server did not respond to upload finish message ❌")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import os
 import math
 from alive_progress import alive_bar
-
+from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 from lib.rdt.socket_interface import SocketInterface
 
 
@@ -38,7 +38,7 @@ class FileSystemUploaderClient:
         """
         return os.path.getsize(path)
 
-    def upload_file(self, sender: SocketInterface, addr, path: str, name: str, verbose: bool):
+    def upload_file(self, sender: RdtSWSocketClient , addr, path: str, name: str, verbose: bool):
         """
         Upload a file to a server.
 
@@ -59,7 +59,10 @@ class FileSystemUploaderClient:
 
             with alive_bar(steps, bar="bubbles", title=f"↑ {name}") as bar:
                 for chunk in iter(lambda: file.read(self._chunk_size), b""):
-                    sender.sendto(chunk, addr)
+                    try:
+                        sender.sendto(chunk, addr)
+                    except TimeoutError:
+                        raise TimeoutError
                     bar()
 
             bar.text("✔ Done ✔")

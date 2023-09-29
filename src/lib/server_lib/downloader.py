@@ -37,8 +37,8 @@ def download_file(
         response = CommandResponse.err_response(
             f"ERR file {comm.name} already exists"
         ).to_str()
-        socket_to_client.sendto(response.encode(), addr)
+        socket_to_client._internal_socket.sendto(response.encode(), addr)
     else:
         response = CommandResponse.ok_response().to_str()
-        socket_to_client.sendto(response.encode(), addr)
-        fs_handler.download_file(channel, comm.name, exit_signal)
+        socket_to_client._internal_socket.sendto(response.encode(), addr)
+        fs_handler.download_file(channel,socket_to_client, comm.name, exit_signal)

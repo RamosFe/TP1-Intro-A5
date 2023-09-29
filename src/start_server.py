@@ -14,7 +14,7 @@ from lib.constants import (
     HARDCODED_MOUNT_PATH,
 )
 
-from lib.rdt.rdt_sw_socket import RdtSWSocket
+from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient
 from lib.rdt.socket_interface import SocketInterface
 
 
@@ -30,9 +30,9 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
     Returns:
         None
     """
-    socket_to_client = RdtSWSocket()
+    socket_to_client = RdtSWSocketClient()
     while not exit_signal.is_set():
-        data = channel.get(block=True, timeout=HARDCODED_TIMEOUT).decode()
+        data = channel.get(block=True, timeout=HARDCODED_TIMEOUT)[0].decode()
         command = Command.from_str(data)
         if command.option == MessageOption.UPLOAD:
             return download_file(
@@ -66,7 +66,7 @@ def main(host, port):
     """
     exit_signal_event = Event()
 
-    server_socket = RdtSWSocket()
+    server_socket = RdtSWSocketClient()
     server_socket.bind((host, port))
 
     # State variables
@@ -76,8 +76,8 @@ def main(host, port):
     # Main loop
     while True:
         try:
-            data, addr = server_socket.recvfrom(HARDCODED_BUFFER_SIZE)
-
+            data, addr = server_socket._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
+            print(f"Received data from client at {addr} and data {data}")
             # If it is a new client
             if addr not in channels:
                 # Creates the channel for the new client
@@ -85,7 +85,7 @@ def main(host, port):
                 channels[addr] = client_channel
 
                 # Sends data to the new client
-                client_channel.put(data)
+                client_channel.put((data,addr))
 
                 new_client = Thread(
                     target=handler, args=(client_channel, addr, exit_signal_event)
@@ -94,7 +94,7 @@ def main(host, port):
                 new_client.start()
             else:
                 # Send to the respective thread
-                channels[addr].put(data)
+                channels[addr].put((data,addr))
 
         except KeyboardInterrupt:
             print("\nClosing server")
