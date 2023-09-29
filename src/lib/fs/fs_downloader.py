@@ -64,6 +64,9 @@ class FileSystemDownloaderServer:
                 while not exit_signal.is_set():
                     
                     data = socket.recv_with_queue(channel)
+                    print(f"data recibida es {data}")
+                    if data is None:
+                        continue
                     if UPLOAD_FINISH_MSG.encode() in data:
                         file.write(data[:data.index(UPLOAD_FINISH_MSG.encode())])
                     file.write(data)

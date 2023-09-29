@@ -52,6 +52,7 @@ class FileSystemUploaderClient:
         Note:
             The upload process continues until the entire file is sent.
         """
+        
         with open(path, "rb") as file:
             steps = math.ceil(self.get_file_size(path) / self._chunk_size)
             if verbose:

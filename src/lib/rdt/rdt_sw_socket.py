@@ -144,7 +144,7 @@ class RdtSWSocketClient:
                 self._recv_ack(addr,global_time, data_packet, counter)
                 
         except TimeoutError:  #FEDE-NOTES Timeout no relacionado con problema de RDT
-                print("Handle Timeout error sending packets")
+                raise TimeoutError
         print("--DEBUG-- sending FINARDO")
 
 
@@ -154,22 +154,24 @@ class RdtSWSocketClient:
         receive_addr = None
         # Timeout para RDT en caso de desconexion
         time_out_errors = TimeOutErrors(time.time(),global_time)
-            
+        
 
+        print(f"addr pasado por parametro es {addr}")
         # Mientras no pase el numero de intentos para mandar el paquete definido por el HARDCODED_MAX_TIMEOUT_PACKET, labura
         while not time_out_errors.max_tries_exceeded():
             # TODO Lo dejamos, pero si trae problemas nos hacemos los boludos y lo borramos
-            while receive_addr != addr:
-                try:
-                    receive, receive_addr = self._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
-                except TimeoutError:
-                    print(f"--DEBUG-- salto el timeout juju")
-                    if time_out_errors.max_tries_exceeded():  #TODO cambiar por una variable que se va sumando
-                        print("--DEBUG-- no se reenvia el paquete raise ERROR : ", time_out_errors.tries)
-                        raise TimeoutError
-                    print("--DEBUG-- se reenvia el paquete con try : ", time_out_errors.tries)
-                    time_out_errors.increase_try()
-                    self._internal_socket.sendto(data_packet.to_send(),addr)
+            # while receive_addr != addr:
+            try:
+                receive, receive_addr = self._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
+                print(f"it received {receive} from {receive_addr}")
+            except TimeoutError:
+                print(f"--DEBUG-- salto el timeout juju")
+                if time_out_errors.max_tries_exceeded():  #TODO cambiar por una variable que se va sumando
+                    print("--DEBUG-- no se reenvia el paquete raise ERROR : ", time_out_errors.tries)
+                    raise TimeoutError
+                print("--DEBUG-- se reenvia el paquete con try : ", time_out_errors.tries)
+                time_out_errors.increase_try()
+                self._internal_socket.sendto(data_packet.to_send(),addr)
 
 
             # Caso que el sequence number es distinto al esperado
@@ -284,7 +286,7 @@ class RdtSWSocketClient:
         data, addr = channel.get(block=True)
         self.addr = addr
         packet = RDTStopWaitPacket.from_bytes(data)
-        print(packet.data)
+        print(f"packet data from recv queeu : {packet.data}")
         print(f"--DEBUG-- counter_value {self.counter.get_value()} and ack is {packet.ack}")
         self._internal_socket.sendto(packet.encode_ack(packet.ack), addr)
 
