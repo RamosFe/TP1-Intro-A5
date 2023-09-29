@@ -1,5 +1,0 @@
-El presente trabajo práctico tiene como objetivo la creación de una aplicación de red. Para tal finalidad, será necesario
-comprender cómo se comunican los procesos a través de la red, y cuál es el modelo de servicio que la capa de transporte
-le ofrece a la capa de aplicación. Además, para poder lograr el objetivo planteado, se aprenderá el uso de la interfaz de
-sockets y los principios básicos de la transferencia de datos confiable (del inglés Reliable Data Transfer, RDT).
-Palabras clave— Socket, protocolo, tcp, udp

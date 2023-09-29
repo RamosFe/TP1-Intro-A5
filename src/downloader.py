@@ -7,7 +7,7 @@ from lib.client_lib import parser, utils as parser_utils
 from lib.constants import HARDCODED_CHUNK_SIZE, HARDCODED_BUFFER_SIZE
 from lib.commands import Command, CommandResponse, MessageOption
 
-from lib.rdt.rdt_sw_socket import RdtSWSocket
+from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient
 from lib.rdt.socket_interface import SocketInterface
 
 
@@ -31,7 +31,7 @@ def main():
         print(f"❌ Error: {args.dst} is a directory ❌")
         return
 
-    client_socket = RdtSWSocket()
+    client_socket = RdtSWSocketClient()
 
     print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
     download_file(client_socket, args.dst, args.name, args.verbose, args.host, args.port)
@@ -40,7 +40,7 @@ def main():
     print("Bye! See you next time 😉")
 
 
-def download_file(connection: SocketInterface, dest: str, name: str, verbose: bool, host: str, port: int):
+def download_file(connection: RdtSWSocketClient, dest: str, name: str, verbose: bool, host: str, port: int):
     """
     Download a file from a server using a UDP socket connection.
 
@@ -61,12 +61,12 @@ def download_file(connection: SocketInterface, dest: str, name: str, verbose: bo
         return
 
     command = Command(MessageOption.DOWNLOAD, name, 0)
-    connection.sendto(command.to_str().encode(), (host, port))
+    connection._internal_socket.sendto(command.to_str().encode(), (host, port))
 
     if verbose:
         print(f"-> Sending request to server to download file {name}")
 
-    response = connection.recv(HARDCODED_BUFFER_SIZE).decode()
+    response = connection._internal_socket.recv(HARDCODED_BUFFER_SIZE).decode()
     command = CommandResponse(response)
     if command.is_error():
         print(f"❌ Request rejected -> {command._msg} ❌")
@@ -81,11 +81,11 @@ def download_file(connection: SocketInterface, dest: str, name: str, verbose: bo
     if user_input.lower() not in ("y", "yes"):
         print("❌ Download canceled ❌")
         response = CommandResponse.err_response("ERR Download canceled").to_str()
-        connection.sendto(response.encode(), (host, port))
+        connection._internal_socket.sendto(response.encode(), (host, port))
         return
 
     response = CommandResponse.ok_response().to_str()
-    connection.sendto(response.encode(), (host, port))
+    connection._internal_socket.sendto(response.encode(), (host, port))
 
     if verbose:
         print(f"-> Downloading file {name} with name {dest}")

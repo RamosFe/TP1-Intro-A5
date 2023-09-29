@@ -32,7 +32,7 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
     """
 
     socket_to_client = RdtSWSocketClient()
-    while not exit_signal.is_set():
+    while not exit_signal.is_set(): # TODO Si nos da error lo borramos
         data = channel.get(block=True, timeout=HARDCODED_TIMEOUT)[0].decode()
         command = Command.from_str(data)
         if command.option == MessageOption.UPLOAD:
@@ -93,6 +93,7 @@ def main(host, port):
                 )
                 clients.append(new_client)
                 new_client.start()
+
             else:
                 # Send to the respective thread
                 channels[addr].put((data,addr))
@@ -101,6 +102,8 @@ def main(host, port):
 
         except KeyboardInterrupt:
             print("\nClosing server")
+            for n in clients:
+                print(n.is_alive())
             close_server(exit_signal_event, clients, server_socket)
             break
 

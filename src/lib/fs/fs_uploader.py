@@ -2,7 +2,7 @@ import os
 import socket
 from threading import Event
 
-from lib.rdt.socket_interface import SocketInterface
+from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 
 
 class FileSystemUploaderServer:
@@ -13,7 +13,7 @@ class FileSystemUploaderServer:
         chunk_size (int): The size of data chunks to be sent at a time.
 
     Attributes:
-        _chunk_size (int): The size of data chunks to be sent at a time.
+        _file_buffer_size (int): The size of data chunks to be read from the file at a time.
 
     Methods:
         get_file_size(path: str) -> int:
@@ -26,8 +26,8 @@ class FileSystemUploaderServer:
             Upload a file to a client socket.
 
     """
-    def __init__(self, chunk_size: int):
-        self._chunk_size = chunk_size
+    def __init__(self, file_buffer_size: int):
+        self._file_buffer_size = file_buffer_size
 
     def get_file_size(self, path: str) -> int:
         """
@@ -43,7 +43,7 @@ class FileSystemUploaderServer:
 
     def upload_file(
         self,
-        sender: SocketInterface,
+        sender: RdtSWSocketClient,
         addr: tuple[str, int],
         path: str,
         name: str,
@@ -68,7 +68,7 @@ class FileSystemUploaderServer:
             if verbose:
                 print(f"-> Uploading file {name}")
 
-            for chunk in iter(lambda: file.read(self._chunk_size), b""):
+            for chunk in iter(lambda: file.read(self._file_buffer_size), b""):
                 if exit_signal.is_set():
                     sender.sendto(chunk, addr)
                     print("Closing server due to signal")

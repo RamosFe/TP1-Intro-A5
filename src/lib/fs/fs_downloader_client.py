@@ -6,7 +6,7 @@ from threading import Event
 from alive_progress import alive_bar
 
 from lib.constants import HARDCODED_BUFFER_SIZE, UPLOAD_FINISH_MSG
-from lib.rdt.socket_interface import SocketInterface
+from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 
 
 class FileSystemDownloaderClient:
@@ -48,7 +48,7 @@ class FileSystemDownloaderClient:
         return os.path.exists(os.path.join(self._mount_path, filename))
 
     def download_file(
-        self, socket: SocketInterface, path: str, size: int, exit_signal: Event
+        self, socket: RdtSWSocketClient, path: str, size: int, exit_signal: Event
     ):
         """
         Download a file from a socket and save it to the specified path with progress.
@@ -69,11 +69,8 @@ class FileSystemDownloaderClient:
                     while not exit_signal.isSet():
                         data = socket.recv(HARDCODED_BUFFER_SIZE)
                         bar()
-
-                        if UPLOAD_FINISH_MSG in data.decode():
-                            file.write(data[: data.decode().index(UPLOAD_FINISH_MSG)])
-                            break
-
+                        if UPLOAD_FINISH_MSG.encode() in data:
+                            return # End of file
                         file.write(data)
                 except queue.Empty as e:
                     if exit_signal.is_set():

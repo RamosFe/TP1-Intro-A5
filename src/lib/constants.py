@@ -5,6 +5,8 @@ HARDCODED_PORT = 6000
 
 # Timeout for certain operations in seconds
 HARDCODED_TIMEOUT = 1
+
+# Maximum number of times to try a timeout operation
 HARDCODED_MAX_TIMEOUT_TRIES = 4
 
 # Chunk size for file transfer
@@ -23,3 +25,4 @@ UPLOAD_FINISH_MSG = "FINARDO"
 
 # Mount path for server files (directory where files are stored)
 HARDCODED_MOUNT_PATH = "./server_files/"
+

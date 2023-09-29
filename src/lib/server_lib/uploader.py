@@ -4,14 +4,14 @@ import os
 from threading import Event
 
 from lib.commands import Command, CommandResponse, MessageOption
-from lib.constants import HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG
+from lib.constants import HARCODED_BUFFER_SIZE_FOR_FILE, UPLOAD_FINISH_MSG
 from lib.fs.fs_uploader import FileSystemUploaderServer
-from lib.rdt.rdt_sw_socket import RdtSWSocket
+from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 
 
 def upload_file(
     channel: queue.Queue,
-    socket_to_client: RdtSWSocket,
+    socket_to_client: RdtSWSocketClient,
     addr: tuple[str, int],
     mount_path: str,
     exit_signal: Event,
@@ -37,17 +37,18 @@ def upload_file(
     print(f"El path es {path}")
     if not (os.path.exists(path) and os.path.isfile(path)):
         response = CommandResponse.err_response("ERR File not found").to_str()
-        socket_to_client.sendto(response.encode(), addr)
+        socket_to_client._internal_socket.sendto(response.encode(), addr)
         return
 
-    fs_handler = FileSystemUploaderServer(HARDCODED_CHUNK_SIZE)
+    fs_handler = FileSystemUploaderServer(HARCODED_BUFFER_SIZE_FOR_FILE)
 
     file_size = fs_handler.get_file_size(path)
     command = Command(MessageOption.UPLOAD, comm.name, file_size)
-    socket_to_client.sendto(command.to_str().encode(), addr)
+    socket_to_client._internal_socket.sendto(command.to_str().encode(), addr)
 
     response = channel.get()
-    command = CommandResponse(response.decode())
+    print("-> Server response: ", response)
+    command = CommandResponse(response[0].decode())
 
     if command.is_error():
         print(f"❌ Request rejected ❌")
@@ -56,4 +57,5 @@ def upload_file(
     print(f"✔ Request accepted sending file {comm.name} to {addr} ✔")
     fs_handler.upload_file(socket_to_client, addr, path, comm.name, False, exit_signal)
     socket_to_client.sendto(UPLOAD_FINISH_MSG.encode(), addr)
+    # TODO SOCKET CRUDO ?
     return
