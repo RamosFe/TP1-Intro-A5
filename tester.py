@@ -19,12 +19,14 @@ def server_receive_packets():
     # data_queue = queue.Queue()
     # msg_queue = queue.Queue()
     # selective_repeat = SelectiveRepeatRDT(WINDOW_SIZE, data_queue, msg_queue, socket,("localhost", UDP_PORT) )
+    a = True
     while True:
         data,addr = sock.recvfrom(1024)        
         #
         packet = Packet.from_bytes(data)
-        print(f"la data que llego es {packet.get_data()}")
-        # data_queue.put(data)
+        #packet.get_data()
+        #print(f"Msg arrived {packet.get_data()}")
+        #data_queue.put(data)
         
         seq_num = int.from_bytes(data[:4], byteorder='big')
         ack_packet = Packet(seq_num, b"ACK")
@@ -32,6 +34,10 @@ def server_receive_packets():
             f.write(f"sequence number received:{seq_num}\n")
         sock.sendto(ack_packet.into_bytes(),addr) 
 
+        if a == True:
+            sock.sendto("Message from server".encode(),addr) 
+            a = False
+            
         # packets = selective_repeat.get_packets()            
         # for packet in packets:
         #     with open("server_log.txt", "a") as f:
@@ -61,21 +67,29 @@ def main():
     # PRIMER DATA UPLOAD o DOWNLOAD
     data_queue = queue.Queue()
     
-    protocol = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, addr)
+    protocol = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, addr) 
 
-    protocol.send_message("Hola servidor!".encode())
+    protocol.send_message("Hola servidor, dale a tu cuerpo alegria macarena!".encode())
 
-    msg = protocol.receive_message()
+    poll = threading.Thread(target=poll_socket, args=(sock, data_queue))
+    poll.start()   
+
+     
+    msg = protocol.receive_message()    
     
     print(msg)
-
     
-
-
-
-
-    
+    #spawn a thread to receive packets from the server
+    # and put them in the data_queue
+    # 1a2b3c4d5e6f
 
     # END: 1a2b3c4d5e6f
+
+def poll_socket(sock, data_queue):
+    while True:
+        data,_ = sock.recvfrom(1024)        
+        print(f"Msg arrived {data}")
+        data_queue.put(data)
+        
 
 main()

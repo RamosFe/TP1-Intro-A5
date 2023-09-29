@@ -10,7 +10,7 @@ class SlidingWindow:
         self.window_size = window_size
         self.buffer = []
         # self.next_seq_num = 0
-        self.base_seq_num = 0
+        self.base_seq_num = 1
         self.socket = socket
 
     def add_packet(self, packet):
@@ -18,8 +18,9 @@ class SlidingWindow:
             packet.timer = threading.Timer(TIME_WAIT, self.timeout, [packet])
             packet.timer.start()
             self.buffer.append(packet)
+            
             return True
-        print(f"len buffer {len(self.buffer)} y window_size: {self.window_size}")
+        #print(f"len buffer {len(self.buffer)} y window_size: {self.window_size}")
         with open("client_log.txt", "a") as f:
             f.write(f"Cannot add Pkt:{packet.seq_num} window is full \n")
         
@@ -54,10 +55,9 @@ class SlidingWindow:
             packet = self.get_packet(ack_num)
             if not packet:
                 return
-
             packet.timer.cancel()
             packet.timer = None
-            if ack_num == self.base_seq_num:
+            if ack_num == self.base_seq_num:                        
                 self.buffer.pop(0)
                 self.base_seq_num += 1
                 while len(self.buffer) > 0:                     
@@ -67,3 +67,4 @@ class SlidingWindow:
                     self.buffer.pop(0)
                     self.base_seq_num += 1
 
+            
