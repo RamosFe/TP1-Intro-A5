@@ -62,13 +62,14 @@ class FileSystemDownloaderServer:
         with open(os.path.join(self._mount_path, path), "wb") as file:
             try:
                 while not exit_signal.is_set():
-                    
                     data = socket.recv_with_queue(channel)
                     print(f"data recibida es {data}")
                     if data is None:
                         continue
                     if UPLOAD_FINISH_MSG.encode() in data:
-                        file.write(data[:data.index(UPLOAD_FINISH_MSG.encode())])
+                        print(f"falta escribir esta data {data[:data.index(UPLOAD_FINISH_MSG.encode())]}")
+                        # file.write(data[:data.index(UPLOAD_FINISH_MSG.encode())])
+                        return
                     print(f"Estoy escribiendo esta data {data}")
                     file.write(data)
                 print("Closing download")
