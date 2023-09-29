@@ -69,7 +69,9 @@ class FileSystemDownloaderServer:
                         continue
                     if UPLOAD_FINISH_MSG.encode() in data:
                         file.write(data[:data.index(UPLOAD_FINISH_MSG.encode())])
+                    print(f"Estoy escribiendo esta data {data}")
                     file.write(data)
+                print("Closing download")
             except queue.Empty as e:
                 if exit_signal.is_set():
                     print("Closing server due to signal")

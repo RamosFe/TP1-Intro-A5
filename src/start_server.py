@@ -30,6 +30,7 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
     Returns:
         None
     """
+
     socket_to_client = RdtSWSocketClient()
     while not exit_signal.is_set():
         data = channel.get(block=True, timeout=HARDCODED_TIMEOUT)[0].decode()
@@ -77,7 +78,7 @@ def main(host, port):
     while True:
         try:
             data, addr = server_socket._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
-            # print(f"Received data from client at {addr} and data {data}")
+            print(f"Received data from client at {addr} and data {data}")
             # If it is a new client
             if addr not in channels:
                 # Creates the channel for the new client

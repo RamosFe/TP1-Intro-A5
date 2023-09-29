@@ -48,7 +48,7 @@ def main(host: str, port: int, max_chunk_size: int, mount_path: str):
                     target=handler,
                     args=(channel_from_client, channel_to_sender, addr, max_chunk_size, mount_path, exit_signal_event),
                 )
-                clients.append(new_client)
+                clients.append(new_client)  ## TODO HAY QUE CERRAR EL QUEUE CUANDO terminamos de enviar el archivo ?
                 new_client.start()
             else:
                 channel = channels[addr]

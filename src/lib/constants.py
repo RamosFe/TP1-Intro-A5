@@ -10,6 +10,9 @@ HARDCODED_MAX_TIMEOUT_TRIES = 4
 # Chunk size for file transfer
 HARDCODED_CHUNK_SIZE = 20
 
+# Buffer size for file transfer
+HARCODED_BUFFER_SIZE_FOR_FILE = 2000
+
 # Size of the packet headers, is 1 on S&W
 PACKET_HEADER_SIZE = 1
 # Buffer size for socket communication

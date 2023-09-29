@@ -59,6 +59,9 @@ class FileSystemUploaderClient:
                 print(f"-> Uploading file {name}")
 
             with alive_bar(steps, bar="bubbles", title=f"↑ {name}") as bar:
+                # data = file.read()
+                # sender.sendto(data, addr)
+                # bar()
                 for chunk in iter(lambda: file.read(self._chunk_size), b""):
                     try:
                         sender.sendto(chunk, addr)

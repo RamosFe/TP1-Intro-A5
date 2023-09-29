@@ -6,7 +6,7 @@ from lib.commands import Command, MessageOption, CommandResponse
 from lib.fs.fs_uploader_client import FileSystemUploaderClient
 from lib.client_lib import utils as parser_utils
 from lib.client_lib import parser
-from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG
+from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG, HARCODED_BUFFER_SIZE_FOR_FILE
 from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 from lib.rdt.rdt_sw_socket import RdtSWSocket
 
@@ -25,7 +25,7 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
         None
     """
     # Creates the upload handler
-    fs_handler = FileSystemUploaderClient(HARDCODED_CHUNK_SIZE)
+    fs_handler = FileSystemUploaderClient(HARCODED_BUFFER_SIZE_FOR_FILE)
     # Get the file size
     file_size = fs_handler.get_file_size(path=path)
 
