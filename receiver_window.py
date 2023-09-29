@@ -15,6 +15,7 @@ class ReceiverWindow:
         # probablemente se perdió el ack que mandamos
         # y nos lo volvieron a mandar
         if packet.seq_num < base_seq_num:
+            # EN ESTE CASO HAY QUE VOLVER A MANDAR EL ACK
             return []
         
         # si es un paquete con el seq que esperamos,

@@ -2,21 +2,11 @@ import queue
 import threading
 from sliding_window import SlidingWindow
 import socket 
+from packet import *
+
+
 WINDOW_SIZE = 4
 
-class Packet:
-    def __init__(self, seq_num, data):
-        self.seq_num = seq_num
-        self.data = data
-        self.timer = None
-        self.timeouts = 0
-    
-    def into_bytes(self):
-        return self.seq_num.to_bytes(4, byteorder='big') + self.data
-    
-    def from_bytes(self, bytes):
-        self.seq_num = int.from_bytes(bytes[:4], byteorder='big')
-        self.data = bytes[4:]
 
 def send_packets(packets,socket,ack_queue: queue.Queue):
     # Create a sliding window with a size of WINDOW_SIZE
@@ -64,8 +54,8 @@ def server_receive_packets():
         seq_num = int.from_bytes(data[:4], byteorder='big')
         ack_packet = Packet(seq_num, b"ACK")
         
-        if seq_num == 2 and ignore_pkt:
-            ignore_pkt = False
+        if seq_num == 4 and ignore_pkt:
+            #ignore_pkt = False
             continue                              
         # Log the above print to the server_log.txt file
         with open("server_log.txt", "a") as f:
