@@ -74,7 +74,7 @@ class FileSystemDownloaderClient:
                         file.write(data)
                 except queue.Empty as e:
                     if exit_signal.is_set():
-                        print("Closing server due to signal")
+                        print(" --DEBUG--- Closing server due to signal")
                         return
                     else:
                         raise e

@@ -121,7 +121,7 @@ class RdtSWSocketClient:
         global_time = time.time()
         
         # TODO Delete debug print
-        print(f"packets_len:{ packets_len}")
+        # print(f"packets_len:{ packets_len}")
 
         # Seteo timeout del socket
         self._internal_socket.settimeout(HARDCODED_TIMEOUT) 
@@ -130,14 +130,14 @@ class RdtSWSocketClient:
         try:
             for i in range(packets_len):
                 #
-                print("--DEBUG-- sending data chunk ",i)
+                # print("--DEBUG-- sending data chunk ",i)
                 # Obtengo el chunk
                 chunk = data[i * HARDCODED_CHUNK_SIZE : (i + 1) * HARDCODED_CHUNK_SIZE] # No puede dar error en python si nos excedemos
                 
                 # Parseo el paquete
                 data_packet = RDTStopWaitPacket(self.counter.get_value(),chunk)  # Al generar el paquete, lo generamos en bytes
                 # Envio el paquete a la dirección
-                print("--DEBUG-- sending packet ",self.counter.get_value())
+                # print("--DEBUG-- sending packet ",self.counter.get_value())
                 self._internal_socket.sendto(data_packet.to_send(),addr)
                 
                     # Espero el ACK
@@ -155,19 +155,17 @@ class RdtSWSocketClient:
         # Timeout para RDT en caso de desconexion
         time_out_errors = TimeOutErrors(time.time(),global_time)
         
-
-        print(f"addr pasado por parametro es {addr}")
         # Mientras no pase el numero de intentos para mandar el paquete definido por el HARDCODED_MAX_TIMEOUT_PACKET, labura
         while not time_out_errors.max_tries_exceeded():
             try:
                 receive, receive_addr = self._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
-                print(f"it received {receive} from {receive_addr}")
+                # print(f"it received {receive} from {receive_addr}")
             except TimeoutError:
-                print(f"--DEBUG-- salto el timeout juju")
+                # print(f"--DEBUG-- salto el timeout juju")
                 if time_out_errors.max_tries_exceeded():  
-                    print("--DEBUG-- no se reenvia el paquete raise ERROR : ", time_out_errors.tries)
+                    # print("--DEBUG-- no se reenvia el paquete raise ERROR : ", time_out_errors.tries)
                     raise TimeoutError
-                print("--DEBUG-- se reenvia el paquete con try : ", time_out_errors.tries)
+                # print("--DEBUG-- se reenvia el paquete con try : ", time_out_errors.tries)
                 time_out_errors.increase_try()
                 self._internal_socket.sendto(data_packet.to_send(),addr)
 
@@ -175,11 +173,11 @@ class RdtSWSocketClient:
             ack_receive = AckSequenceNumer.from_bytes(receive)
             if ack_receive.ack != self.counter.get_value():
                 # time.sleep(2)   
-                print(f"--DEBUG-- i received {int.from_bytes(receive, byteorder='big')} and counter {self.counter.get_value()}")
+                # print(f"--DEBUG-- i received {int.from_bytes(receive, byteorder='big')} and counter {self.counter.get_value()}")
                 continue
             
             # Si, el sequence number es el que esperabamos, incremento y sigo con mi vida
-            print("--DEBUG-- se recibio el ack esperado, i incremento el counter, ack recibido : ", ack_receive.ack)
+            # print("--DEBUG-- se recibio el ack esperado, i incremento el counter, ack recibido : ", ack_receive.ack)
             self.counter.increment()
             break
 
@@ -191,7 +189,7 @@ class RdtSWSocketClient:
         global_time = time.time()
         
         # TODO Delete debug print
-        print(f"packets_len:{ packets_len}")
+        # print(f"packets_len:{ packets_len}")
 
         # Seteo timeout del socket - Borrado porque no se usa el recv de este socket
         # self._internal_socket.settimeout(HARDCODED_TIMEOUT) 
@@ -200,21 +198,22 @@ class RdtSWSocketClient:
         try:
             for i in range(packets_len):
                 #
-                print("--DEBUG-- sending data chunk ",i)
+                # print("--DEBUG-- sending data chunk ",i)
                 # Obtengo el chunk
                 chunk = data[i * HARDCODED_CHUNK_SIZE : (i + 1) * HARDCODED_CHUNK_SIZE] # No puede dar error en python si nos excedemos
                 
                 # Parseo el paquete
                 data_packet = RDTStopWaitPacket(counter.get_value(),chunk)  # Al generar el paquete, lo generamos en bytes
                 # Envio el paquete a la dirección
-                print("--DEBUG-- sending packet ",counter.get_value())
+                # print("--DEBUG-- sending packet ",counter.get_value())
                 self._internal_socket.sendto(data_packet.to_send(),addr)
                 
                     # Espero el ACK
                 self._recv_ack_with_queue(addr,global_time, data_packet, counter, channel=channel)
                 
         except TimeoutError:  #FEDE-NOTES Timeout no relacionado con problema de RDT
-                print("Handle Timeout error sending packets")
+                raise TimeoutError
+                # print("Handle Timeout error sending packets")
     
     def _recv_ack_with_queue(self, addr: tuple[str,int], global_time: float, data_packet, channel: queue.Queue):
         # Addr del propietario del mensaje recibido
@@ -230,11 +229,11 @@ class RdtSWSocketClient:
                 try:
                     receive, receive_addr = channel.get(block=True, timeout=HARDCODED_TIMEOUT)
                 except queue.Empty:
-                    print(f"--DEBUG-- salto el timeout juju")
+                    # print(f"--DEBUG-- salto el timeout juju")
                     if time_out_errors.max_tries_exceeded():  #TODO cambiar por una variable que se va sumando
                         print("--DEBUG-- no se reenvia el paquete raise ERROR : ", time_out_errors.tries)
                         raise TimeoutError
-                    print("--DEBUG-- se reenvia el paquete con try : ", time_out_errors.tries)
+                    # print("--DEBUG-- se reenvia el paquete con try : ", time_out_errors.tries)
                     time_out_errors.increase_try()
                     self._internal_socket.sendto(data_packet.to_send(),addr)
 
@@ -243,11 +242,11 @@ class RdtSWSocketClient:
             ack_receive = AckSequenceNumer.from_bytes(receive)
             if ack_receive.ack != self.counter.get_value():
                 # time.sleep(2)   
-                print(f"--DEBUG-- i received {int.from_bytes(receive, byteorder='big')} and counter {counter.get_value()}")
+                # print(f"--DEBUG-- i received {int.from_bytes(receive, byteorder='big')} and counter {counter.get_value()}")
                 continue
             
             # Si, el sequence number es el que esperabamos, incremento y sigo con mi vida
-            print("--DEBUG-- se recibio el ack esperado, i incremento el counter, ack recibido : ", ack_receive.ack)
+            # print("--DEBUG-- se recibio el ack esperado, i incremento el counter, ack recibido : ", ack_receive.ack)
             self.counter.increment()
             break
 
@@ -270,8 +269,7 @@ class RdtSWSocketClient:
         data,addr = self._internal_socket.recvfrom(bufsize)
         self.addr = addr
         packet = RDTStopWaitPacket.from_bytes(data)
-        print(packet.data)
-        print(f"--DEBUG-- counter_value {self.counter.get_value()} and ack is {packet.ack}")
+        # print(f"--DEBUG-- counter_value {self.counter.get_value()} and ack is {packet.ack}")
         self._internal_socket.sendto(packet.encode_ack(packet.ack), addr)
 
         if self.counter.get_value() == packet.ack:
@@ -282,8 +280,8 @@ class RdtSWSocketClient:
         data, addr = channel.get(block=True)
         self.addr = addr
         packet = RDTStopWaitPacket.from_bytes(data)
-        print(f"packet data from recv queeu : {packet.data}")
-        print(f"--DEBUG-- counter_value {self.counter.get_value()} and ack is {packet.ack}")
+        # print(f"packet data from recv queeu : {packet.data}")
+        # print(f"--DEBUG-- counter_value {self.counter.get_value()} and ack is {packet.ack}")
         self._internal_socket.sendto(packet.encode_ack(packet.ack), addr)
 
         if self.counter.get_value() == packet.ack:

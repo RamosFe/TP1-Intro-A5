@@ -44,7 +44,6 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
 
     # Wait for server response and check the type of response
     response = client_socket._internal_socket.recv(HARDCODED_BUFFER_SIZE).decode()
-    print("-> Server response: ", response)
     response_command = CommandResponse(response)
     # If error, return
     if response_command.is_error():

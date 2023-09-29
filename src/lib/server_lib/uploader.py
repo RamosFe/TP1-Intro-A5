@@ -34,7 +34,6 @@ def upload_file(
         If the file exists and is valid, it sends an upload request to the client and proceeds with the upload.
     """
     path = mount_path + comm.name
-    print(f"El path es {path}")
     if not (os.path.exists(path) and os.path.isfile(path)):
         response = CommandResponse.err_response("ERR File not found").to_str()
         socket_to_client._internal_socket.sendto(response.encode(), addr)
@@ -47,7 +46,6 @@ def upload_file(
     socket_to_client._internal_socket.sendto(command.to_str().encode(), addr)
 
     response = channel.get()
-    print("-> Server response: ", response)
     command = CommandResponse(response[0].decode())
 
     if command.is_error():

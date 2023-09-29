@@ -78,7 +78,7 @@ def main(host, port):
     while True:
         try:
             data, addr = server_socket._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
-            print(f"Received data from client at {addr} and data {data}")
+            # print(f"Received data from client at {addr} and data {data}")
             # If it is a new client
             if addr not in channels:
                 # Creates the channel for the new client
@@ -102,8 +102,6 @@ def main(host, port):
 
         except KeyboardInterrupt:
             print("\nClosing server")
-            for n in clients:
-                print(n.is_alive())
             close_server(exit_signal_event, clients, server_socket)
             break
 
