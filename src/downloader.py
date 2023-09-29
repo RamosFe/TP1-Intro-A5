@@ -68,6 +68,7 @@ def download_file(connection: RdtSWSocketClient, dest: str, name: str, verbose: 
 
     response = connection._internal_socket.recv(HARDCODED_BUFFER_SIZE).decode()
     command = CommandResponse(response)
+    print("-> Server response: ", response)
     if command.is_error():
         print(f"❌ Request rejected -> {command._msg} ❌")
         return
