@@ -14,17 +14,16 @@ class SlidingWindow:
         self.socket = socket
 
     def add_packet(self, packet):
+        
         if len(self.buffer) < self.window_size:
             packet.timer = threading.Timer(TIME_WAIT, self.timeout, [packet])
             packet.timer.start()
             self.buffer.append(packet)
             
             return True
-        #print(f"len buffer {len(self.buffer)} y window_size: {self.window_size}")
         with open("client_log.txt", "a") as f:
             f.write(f"Cannot add Pkt:{packet.seq_num} window is full \n")
         
-        time.sleep(0.3)
         return False
 
 

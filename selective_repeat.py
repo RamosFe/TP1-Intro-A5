@@ -6,7 +6,7 @@ from receiver_window import ReceiverWindow
 from sliding_window import SlidingWindow
 from queue import *
 
-PACKET_SIZE = 10
+PACKET_SIZE = 512
 
 class SenderSR:
     _sender = None
@@ -21,7 +21,7 @@ class SenderSR:
         self._sender = threading.Thread(target=self._send_packets, args=(self._response_queue,socket))
         self._ack_queue = ack_queue
         self._sender.start()
-        self._seq_num = 0
+        self._seq_num = 1
         self._socket = socket
         self._addr = addr
 
@@ -32,14 +32,15 @@ class SenderSR:
         n_packets = ceil(len(data) / PACKET_SIZE)
         packets = []
         for i in range(1, n_packets + 1, 1):
-            packet = Packet(self._seq_num + i,data[(i-1) * PACKET_SIZE : i * PACKET_SIZE])
+            chunk = data[(i-1) * PACKET_SIZE : i * PACKET_SIZE]
+            packet = Packet(self._seq_num , chunk)
             packets.append(packet)
+            self._seq_num += 1
         
         
-        end_packet = Packet(n_packets + 1, b'EOP')
+        end_packet = Packet(self._seq_num, b'EOP')
+        self._seq_num += 1
         packets.append(end_packet)
-        self._seq_num = self._seq_num + n_packets + 2
-        print(f"Pkts to send: {end_packet.seq_num}")
         return packets
         #puede pasar que se generen paquetes con un seq numb que desp no se pueden enviar porque 
         #la window esta llena, quizás hay q revisar este caso (ej no mandar toda la data o mandar
@@ -80,15 +81,15 @@ class ReceiverSR:
     _ack_queue = None
     _msg_queue = None
 
-    def __init__(self, window_size, data_queue, ack_queue, msg_queue):
+    def __init__(self, window_size, data_queue, ack_queue, sock, msg_queue, addr):
         self._window = ReceiverWindow(window_size)
         self._ack_queue = ack_queue
         self._data_queue = data_queue
         self._msg_queue = msg_queue        
-        self._receiver = threading.Thread(target=self._receive_packets)
+        self._receiver = threading.Thread(target=(self._receive_packets), args=(sock,addr))
         self._receiver.start()
 
-    def _receive_packets(self):
+    def _receive_packets(self, socket, addr):
                 
         while True:
             packet = self._data_queue.get(block=True)
@@ -102,10 +103,15 @@ class ReceiverSR:
             if packet.is_ack():               
                 self._ack_queue.put(packet.seq_num)                
                 continue
-            self._window.add_packet(packet)
+
+            if not self._window.add_packet(packet):    
+                continue
+            
+            ack = Packet(packet.seq_num, b'ACK')
+            socket.sendto(ack.into_bytes(), addr)
+            
             packets = self._window.get_ordered_packets()
-            print(f"Added to wnd{packets}")
-            for pkt in packets:                
+            for pkt in packets:               
                 self._msg_queue.put(pkt)
             
 
@@ -113,52 +119,45 @@ class SelectiveRepeatRDT:
     _socket = None
     _sender = None
     _receiver = None
+    _data_queue = None
 
     def __init__(self, window_size, data_queue, socket, addr):
         self._socket = socket
         ack_queue = Queue()
+        self._data_queue = data_queue
         self._response_queue = Queue()
         self._sender = SenderSR(window_size,self._response_queue , ack_queue,socket,addr) #sender sliding window
-        
         self._msg_queue = Queue()
-        self._receiver = ReceiverSR(window_size,data_queue, ack_queue, self._msg_queue) # receiver window
+        self._receiver = ReceiverSR(window_size,data_queue, ack_queue, socket, self._msg_queue, addr) # receiver window
                 
     
     '''Recibe el mensaje de capa de aplicación para ser desarmado en paquetes y enviado al destinatario'''
     def send_message(self, data):
         # Primero armamos los paquetes a partir de la data.
         
+
         packets = self._sender._make_packets(data)
         for packet in packets:
+            #print(f"mando paquete de seq num: {packet.get_seqnum()}")
             self._response_queue.put(packet)
         
     '''Devuelve un mensaje hacia la capa de aplicación '''
-    def receive_message(self) -> str:
-        message = ""
-                
+    def receive_message(self) -> bytes:
+        message = b''
         # Deberia darnos una lista hasta que llegue el EOP
-        packets = self.get_packets()
-        print(f"Len{len(packets)}")            
-        
+        packets = self.get_packets()         
         for packet in packets:               
-            data = packet.get_data()          
             message += packet.get_data()
-        
         return message
     
     def get_packets(self) -> list:
-        packets = []        
-        data = self._msg_queue.get()
-        print("Blocked?")
-        packet = Packet.from_bytes(data) 
-        print(f"HH:{packet.data}")
+        packets = []
+        packet = self._msg_queue.get()
         while not packet.data == b'EOP':
-            print(f"HH:{packet.data}")
-            data = self._msg_queue.get()
-            packet = Packet.from_bytes(data)   
             packets.append(packet)
+            packet = self._msg_queue.get() 
         
         return packets
-    
+
     
     

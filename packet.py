@@ -13,6 +13,7 @@ class Packet:
     def from_bytes(bytes):
         seq_num = int.from_bytes(bytes[:4], byteorder='big')
         data = bytes[4:]
+        #print(f"from bytes seq_num: {seq_num} data: {data}")
         return Packet(seq_num, data)
 
     #TODO:REFACTORIZAR LA DATA TENDRIA QUE TENER EL SEQUENCE NUMBER
@@ -21,3 +22,6 @@ class Packet:
     
     def get_data (self):
         return self.data
+    
+    def get_seqnum (self):
+        return self.seq_num
