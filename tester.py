@@ -21,7 +21,7 @@ def server_receive_packets():
     poll = threading.Thread(target=poll_socket, args=(sock, data_queue))
     poll.start()   
 
-    #chunk = protocol.receive_message()
+    
     
     ## protocolo de servidor
     with open("llego.jpeg","wb") as file: 
@@ -107,4 +107,4 @@ def poll_socket2(sock, data_queue):
         #print(f"data: {data}")
         data_queue.put(data)        
 
-main()
+#main()
