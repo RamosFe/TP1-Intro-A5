@@ -50,7 +50,7 @@ class SlidingWindow:
                 packet.timeouts += 1
 
             
-    def receive_ack(self, ack_num):
+    def receive_ack(self, ack_num):        
         if self.base_seq_num <= ack_num < self.base_seq_num + self.window_size:
             packet = self.get_packet(ack_num)
             if not packet:

@@ -35,7 +35,10 @@ def server_receive_packets():
         sock.sendto(ack_packet.into_bytes(),addr) 
 
         if a == True:
-            sock.sendto("Message from server".encode(),addr) 
+            packet = Packet(1,b"Message from server")
+            sock.sendto(packet.into_bytes(),addr) 
+            end_packet = Packet(2, b'EOP')
+            sock.sendto(end_packet.into_bytes(),addr) 
             a = False
             
         # packets = selective_repeat.get_packets()            
@@ -69,7 +72,7 @@ def main():
     
     protocol = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, addr) 
 
-    protocol.send_message("Hola servidor, dale a tu cuerpo alegria macarena!".encode())
+    protocol.send_message("Hola servidor, dale a tu cuerpo alegria macarena ea ea!".encode())
 
     poll = threading.Thread(target=poll_socket, args=(sock, data_queue))
     poll.start()   
@@ -88,7 +91,7 @@ def main():
 def poll_socket(sock, data_queue):
     while True:
         data,_ = sock.recvfrom(1024)        
-        print(f"Msg arrived {data}")
+        print(f"data: {data}")
         data_queue.put(data)
         
 

@@ -39,7 +39,7 @@ class SenderSR:
         end_packet = Packet(n_packets + 1, b'EOP')
         packets.append(end_packet)
         self._seq_num = self._seq_num + n_packets + 2
-        print(f"Lastseq: {end_packet.seq_num}")
+        print(f"Pkts to send: {end_packet.seq_num}")
         return packets
         #puede pasar que se generen paquetes con un seq numb que desp no se pueden enviar porque 
         #la window esta llena, quizás hay q revisar este caso (ej no mandar toda la data o mandar
@@ -49,13 +49,20 @@ class SenderSR:
         while not self._ack_queue.empty():            
             ack_num = self._ack_queue.get()
             
+            
             with open("client_log.txt", "a") as f:
                 f.write(f"Received ack: {ack_num}\n")
             self._window.receive_ack(ack_num)
 
     def _send_packets(self, response_queue, socket):
-        while True:            
-            packet = response_queue.get() # Esto seria response_queue
+        while True:
+            try:
+                packet = response_queue.get_nowait()
+            except Empty:
+                # Handle the case where the queue is empty
+                self.check_ack_queue()
+                continue
+            
             if packet is None:
                 continue
            
@@ -93,12 +100,11 @@ class ReceiverSR:
             packet = Packet.from_bytes(packet)
             
             if packet.is_ack():               
-                self._ack_queue.put(packet.seq_num)
-                #print(f"Seq sended:{packet.seq_num}")    
+                self._ack_queue.put(packet.seq_num)                
                 continue
             self._window.add_packet(packet)
             packets = self._window.get_ordered_packets()
-            print(packets)
+            print(f"Added to wnd{packets}")
             for pkt in packets:                
                 self._msg_queue.put(pkt)
             
@@ -141,11 +147,13 @@ class SelectiveRepeatRDT:
         return message
     
     def get_packets(self) -> list:
-        
         packets = []        
         data = self._msg_queue.get()
+        print("Blocked?")
         packet = Packet.from_bytes(data) 
+        print(f"HH:{packet.data}")
         while not packet.data == b'EOP':
+            print(f"HH:{packet.data}")
             data = self._msg_queue.get()
             packet = Packet.from_bytes(data)   
             packets.append(packet)
