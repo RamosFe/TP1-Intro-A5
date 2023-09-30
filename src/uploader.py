@@ -9,6 +9,7 @@ from lib.client_lib import parser
 from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG, HARCODED_BUFFER_SIZE_FOR_FILE
 from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 from lib.rdt.rdt_sw_socket import RdtSWSocket
+from lib.handshake import ThreeWayHandShake
 
 
 def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
@@ -31,20 +32,23 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
 
     # Creates the client socket
     client_socket = RdtSWSocketClient()
-
     # Creates the upload command and sends it
-    command = Command(MessageOption.UPLOAD, name, file_size)
-    client_socket._internal_socket.sendto(command.to_str().encode(), addr)
 
-    # Log the command if verbose
-    if verbose:
-        print(
-            f"-> Sending request to server to upload file {name} with size {file_size} bytes"
-        )
+    try:
+        command = Command(MessageOption.UPLOAD, name, file_size)
 
-    # Wait for server response and check the type of response
-    response = client_socket._internal_socket.recv(HARDCODED_BUFFER_SIZE).decode()
-    response_command = CommandResponse(response)
+        #Creates ThreeWayHandShake
+        three_way_handshake = ThreeWayHandShake(client_socket)
+
+        if verbose:
+            print(f"-> Sending request to server to upload file {name} with size {file_size} bytes")
+        response = three_way_handshake.send(command.to_str(),addr).decode()
+        # Log the command if verbose
+        response_command = CommandResponse(response)
+
+    except TimeoutError:
+        print("❌ Error: server did not respond to upload request ❌")
+        return
     # If error, return
     if response_command.is_error():
         print(f"❌ Request rejected -> {response_command._msg} ❌")

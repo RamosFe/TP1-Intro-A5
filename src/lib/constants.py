@@ -7,7 +7,7 @@ HARDCODED_PORT = 6000
 HARDCODED_TIMEOUT = 1
 
 # Maximum number of times to try a timeout operation
-HARDCODED_MAX_TIMEOUT_TRIES = 4
+HARDCODED_MAX_TIMEOUT_TRIES = 10
 
 # Chunk size for file transfer
 HARDCODED_CHUNK_SIZE = 1024

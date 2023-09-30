@@ -2,7 +2,6 @@ import queue
 import socket
 from threading import Thread, Event
 from typing import List, Dict, Tuple
-
 from lib.server_lib.downloader import download_file
 from lib.server_lib.uploader import upload_file
 from lib.commands import Command, MessageOption
@@ -33,7 +32,7 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
 
     socket_to_client = RdtSWSocketClient()
     while not exit_signal.is_set(): # TODO Si nos da error lo borramos
-        data = channel.get(block=True, timeout=HARDCODED_TIMEOUT)[0].decode()
+        data = channel.get(block=True, timeout=HARDCODED_TIMEOUT)[0].decode() # TODO CAMBIAR ESTO; SOLO AGARRA EL COMANDO, no el addr : (Message_command Encodeado, addr)
         command = Command.from_str(data)
         if command.option == MessageOption.UPLOAD:
             return download_file(

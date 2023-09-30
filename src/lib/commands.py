@@ -43,6 +43,11 @@ class Command:
     def to_str(self) -> str:
         """Serialize the command object into a string."""
         return f"{self.option.value}:{self.name}:{self.size}"
+    
+
+    def option(self) -> str:
+        """Get the message option."""
+        return self.option
 
     @staticmethod
     def from_str(msg: str) -> "Command":

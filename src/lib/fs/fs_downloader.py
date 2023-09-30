@@ -66,7 +66,6 @@ class FileSystemDownloaderServer:
                     if data is None:
                         continue
                     if UPLOAD_FINISH_MSG.encode() in data:
-                        # file.write(data[:data.index(UPLOAD_FINISH_MSG.encode())])
                         return
                     file.write(data)
                 print("Closing download")
