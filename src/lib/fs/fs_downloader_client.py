@@ -68,6 +68,8 @@ class FileSystemDownloaderClient:
                 try:
                     while not exit_signal.isSet():
                         data = socket.recv(HARDCODED_BUFFER_SIZE)
+                        if data is None:
+                            continue
                         if UPLOAD_FINISH_MSG.encode() in data:
                             return # End of file
                         bar()
