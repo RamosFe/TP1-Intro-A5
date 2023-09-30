@@ -48,7 +48,7 @@ class FileSystemDownloaderClient:
         return os.path.exists(os.path.join(self._mount_path, filename))
 
     def download_file(
-        self, socket: RdtSWSocketClient, path: str, size: int, exit_signal: Event
+        self, socketSW, socketSR,path: str, size: int, exit_signal: Event
     ):
         """
         Download a file from a socket and save it to the specified path with progress.
@@ -67,7 +67,10 @@ class FileSystemDownloaderClient:
             with open(os.path.join(self._mount_path, path), "wb") as file:
                 try:
                     while not exit_signal.isSet():
-                        data = socket.recv(HARDCODED_BUFFER_SIZE)
+                        if socketSW is not None:
+                            data = socketSW.recv(HARDCODED_BUFFER_SIZE)
+                        else:
+                            data = socketSR.receive_message()
                         if data is None:
                             continue
                         if UPLOAD_FINISH_MSG.encode() in data:

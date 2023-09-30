@@ -2,7 +2,7 @@ import queue
 import socket
 from threading import Thread, Event
 from typing import List, Dict, Tuple
-from selective_repeat import SelectiveRepeatRDT
+from lib.sr_rdt.selective_repeat import SelectiveRepeatRDT
 from lib.server_lib.downloader import download_file
 from lib.server_lib.uploader import upload_file
 from lib.commands import Command, MessageOption
@@ -84,7 +84,6 @@ def main(host, port):
     while True:
         try:
             # data, addr = server_socket._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
-            print("Waiting for data\n")
             data, addr = sock.recvfrom(HARDCODED_BUFFER_SIZE)            
             # If it is a new client
             if addr not in channels:

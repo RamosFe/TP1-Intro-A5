@@ -44,7 +44,8 @@ class FileSystemUploaderServer:
 
     def upload_file(
         self,
-        sender: RdtSWSocketClient,
+        socketSW,
+        socketSR,
         addr: tuple[str, int],
         path: str,
         name: str,
@@ -72,7 +73,13 @@ class FileSystemUploaderServer:
 
             for chunk in iter(lambda: file.read(self._file_buffer_size), b""):
                 if exit_signal.is_set():
-                    sender.sendto_with_queue(chunk, addr,channel)
+                    if socketSW is not None:
+                        socketSW.sendto_with_queue(chunk, addr,channel)
+                    else:
+                        socketSR.send_message(chunk)
                     print("Closing server due to signal")
                     break
-                sender.sendto_with_queue(chunk, addr,channel)
+                if socketSW is not None:
+                    socketSW.sendto_with_queue(chunk, addr,channel)
+                else:
+                    socketSR.send_message(chunk)
