@@ -185,7 +185,6 @@ class RdtSWSocketClient:
         # Obtengo la cantidad de chunks en el paquete
         packets_len = math.ceil(len(data) / HARDCODED_CHUNK_SIZE) 
         # Inicializo el counter usado para el sequence number
-        counter = ModuleNCounter(2)
         global_time = time.time()
         
         # TODO Delete debug print
@@ -203,13 +202,13 @@ class RdtSWSocketClient:
                 chunk = data[i * HARDCODED_CHUNK_SIZE : (i + 1) * HARDCODED_CHUNK_SIZE] # No puede dar error en python si nos excedemos
                 
                 # Parseo el paquete
-                data_packet = RDTStopWaitPacket(counter.get_value(),chunk)  # Al generar el paquete, lo generamos en bytes
+                data_packet = RDTStopWaitPacket(self.counter.get_value(),chunk)  # Al generar el paquete, lo generamos en bytes
                 # Envio el paquete a la dirección
                 # print("--DEBUG-- sending packet ",counter.get_value())
                 self._internal_socket.sendto(data_packet.to_send(),addr)
                 
                     # Espero el ACK
-                self._recv_ack_with_queue(addr,global_time, data_packet, counter, channel=channel)
+                self._recv_ack_with_queue(addr,global_time, data_packet, channel=channel)
                 
         except TimeoutError:  #FEDE-NOTES Timeout no relacionado con problema de RDT
                 raise TimeoutError
@@ -260,17 +259,11 @@ class RdtSWSocketClient:
         Returns:
             bytes: The received data as bytes.
         """
-        # timeouts = [1,0.5,0,2]
-        # choice = random.choice(timeouts)
-        # time.sleep(choice)
-        # print("--DEBUG-- choice is ",choice)
         
-
         data,addr = self._internal_socket.recvfrom(bufsize)
         self.addr = addr
         packet = RDTStopWaitPacket.from_bytes(data)
-        # print(f"--DEBUG-- counter_value {self.counter.get_value()} and ack is {packet.ack}")
-        self._internal_socket.sendto(packet.encode_ack(packet.ack), addr)
+        self._internal_socket.sendto(packet.encode_ack(packet.ack),(HARDCODED_HOST,HARDCODED_PORT) )   # TODO poner bonito lo del HARDCODED
 
         if self.counter.get_value() == packet.ack:
             self.counter.increment()

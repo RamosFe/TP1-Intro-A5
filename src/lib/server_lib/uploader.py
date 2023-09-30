@@ -53,7 +53,7 @@ def upload_file(
         return
 
     print(f"✔ Request accepted sending file {comm.name} to {addr} ✔")
-    fs_handler.upload_file(socket_to_client, addr, path, comm.name, False, exit_signal)
-    socket_to_client.sendto(UPLOAD_FINISH_MSG.encode(), addr)
+    fs_handler.upload_file(socket_to_client, addr, path, comm.name, False, exit_signal,channel)
+    socket_to_client.sendto_with_queue(UPLOAD_FINISH_MSG.encode(), addr,channel)
     # TODO SOCKET CRUDO ?
     return

@@ -1,4 +1,5 @@
 import os
+import queue
 import socket
 from threading import Event
 
@@ -49,6 +50,7 @@ class FileSystemUploaderServer:
         name: str,
         verbose: bool,
         exit_signal: Event,
+        channel: queue.Queue,
     ):
         """
         Upload a file to a client socket.
@@ -70,7 +72,7 @@ class FileSystemUploaderServer:
 
             for chunk in iter(lambda: file.read(self._file_buffer_size), b""):
                 if exit_signal.is_set():
-                    sender.sendto(chunk, addr)
+                    sender.sendto_with_queue(chunk, addr,channel)
                     print("Closing server due to signal")
                     break
-                sender.sendto(chunk, addr)
+                sender.sendto_with_queue(chunk, addr,channel)
