@@ -227,7 +227,7 @@ class RdtSWSocketClient:
         # Timeout para RDT en caso de desconexion
         time_out_errors = TimeOutErrors()
         
-        print("--DEBUG-- waiting for ack with queue")
+        # print("--DEBUG-- waiting for ack with queue")
 
         # Mientras no pase el numero de intentos para mandar el paquete definido por el HARDCODED_MAX_TIMEOUT_PACKET, labura
         while not time_out_errors.max_tries_exceeded():
@@ -262,7 +262,7 @@ class RdtSWSocketClient:
 
  
 
-    def recv(self, bufsize: int) -> bytes:
+    def recv(self, bufsize: int, data = None,addr = None) -> bytes:
         """
         Receives data from the socket with the given buffer size.
 
@@ -272,8 +272,9 @@ class RdtSWSocketClient:
         Returns:
             bytes: The received data as bytes.
         """
-        
-        data,addr = self._internal_socket.recvfrom(bufsize)
+        self._internal_socket.settimeout(None)
+        if addr is None:
+            data,addr = self._internal_socket.recvfrom(bufsize)
         self.addr = addr
         packet = RDTStopWaitPacket.from_bytes(data)
         self._internal_socket.sendto(packet.encode_ack(packet.ack),(HARDCODED_HOST,HARDCODED_PORT) )   # TODO poner bonito lo del HARDCODED

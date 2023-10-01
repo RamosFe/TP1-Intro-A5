@@ -6,6 +6,7 @@ from lib.fs.fs_downloader_client import FileSystemDownloaderClient
 from lib.client_lib import parser, utils as parser_utils
 from lib.constants import HARDCODED_CHUNK_SIZE, HARDCODED_BUFFER_SIZE
 from lib.commands import Command, CommandResponse, MessageOption
+from lib.handshake import ThreeWayHandShake
 
 from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient
 from lib.rdt.socket_interface import SocketInterface
@@ -61,16 +62,24 @@ def download_file(connection: RdtSWSocketClient, dest: str, name: str, verbose: 
         return
 
     command = Command(MessageOption.DOWNLOAD, name, 0)
-    connection._internal_socket.sendto(command.to_str().encode(), (host, port))
 
     if verbose:
         print(f"-> Sending request to server to download file {name}")
 
-    response = connection._internal_socket.recv(HARDCODED_BUFFER_SIZE).decode()
+
+    three_way_handshake = ThreeWayHandShake(connection)
+    try:
+        response = three_way_handshake.send_download(command.to_str(),(host,port),True).decode()
+    except TimeoutError:
+        print("❌ Request not answered ❌")
+        return
+
+    # connection._internal_socket.sendto(command.to_str().encode(), (host, port))
+    # response = connection._internal_socket.recv(HARDCODED_BUFFER_SIZE).decode()
     command = CommandResponse(response)
     print("-> Server response: ", response)
     if command.is_error():
-        print(f"❌ Request rejected -> {command._msg} ❌")
+        print(f"❌ Request rejected -> {command._msg} ❌") # TODO OK RECIBI EL ERR
         return
 
     if verbose:
@@ -82,16 +91,22 @@ def download_file(connection: RdtSWSocketClient, dest: str, name: str, verbose: 
     if user_input.lower() not in ("y", "yes"):
         print("❌ Download canceled ❌")
         response = CommandResponse.err_response("ERR Download canceled").to_str()
-        connection._internal_socket.sendto(response.encode(), (host, port))
+        connection._internal_socket.sendto(response.encode(), (host, port)) # TODO VER ERROR DE DOWNLOAD
         return
 
     response = CommandResponse.ok_response().to_str()
-    connection._internal_socket.sendto(response.encode(), (host, port))
+    try:
+        first_data,addr = three_way_handshake.send_download(response,(host,port),False)
 
+    except TimeoutError:
+        print("❌ Connection lost due to multiple tries ❌")
+        return 
+    # connection._internal_socket.sendto(response.encode(), (host, port))
+    print("received data from server, starting download")
     if verbose:
         print(f"-> Downloading file {name} with name {dest}")
 
-    fs_handler.download_file(connection, dest, size, Event())
+    fs_handler.download_file(connection, dest, size, Event(),first_data,addr)
 
     if verbose:
         print(f"✔ File {name} downloaded successfully ✔")

@@ -6,6 +6,7 @@ from threading import Event
 from lib.commands import Command, CommandResponse, MessageOption
 from lib.constants import HARCODED_BUFFER_SIZE_FOR_FILE, UPLOAD_FINISH_MSG
 from lib.fs.fs_uploader import FileSystemUploaderServer
+from lib.handshake import ThreeWayHandShake
 from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 
 
@@ -34,19 +35,30 @@ def upload_file(
         If the file exists and is valid, it sends an upload request to the client and proceeds with the upload.
     """
     path = mount_path + comm.name
+    three_way_hand_shake = ThreeWayHandShake(socket_to_client)
     if not (os.path.exists(path) and os.path.isfile(path)):
         response = CommandResponse.err_response("ERR File not found").to_str()
-        socket_to_client._internal_socket.sendto(response.encode(), addr)
+
+        three_way_hand_shake.send_with_queue_upload(response,addr,channel) # TODO CON ERROR
+        # socket_to_client._internal_socket.sendto(response.encode(), addr)
         return
 
     fs_handler = FileSystemUploaderServer(HARCODED_BUFFER_SIZE_FOR_FILE)
 
     file_size = fs_handler.get_file_size(path)
     command = Command(MessageOption.UPLOAD, comm.name, file_size)
-    socket_to_client._internal_socket.sendto(command.to_str().encode(), addr)
 
-    response = channel.get()
-    command = CommandResponse(response[0].decode())
+    try:
+        command = CommandResponse(three_way_hand_shake.send_with_queue_upload(command.to_str(),addr,channel).decode())
+    
+    except TimeoutError:
+        print("❌ Request not answered ❌")
+        return
+
+    # socket_to_client._internal_socket.sendto(command.to_str().encode(), addr)
+
+    # response = channel.get()
+    # command = CommandResponse(response[0].decode())
 
     if command.is_error():
         print(f"❌ Request rejected ❌")
@@ -55,5 +67,4 @@ def upload_file(
     print(f"✔ Request accepted sending file {comm.name} to {addr} ✔")
     fs_handler.upload_file(socket_to_client, addr, path, comm.name, False, exit_signal,channel)
     socket_to_client.sendto_with_queue(UPLOAD_FINISH_MSG.encode(), addr,channel)
-    # TODO SOCKET CRUDO ?
     return
