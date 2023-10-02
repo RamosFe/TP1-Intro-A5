@@ -10,6 +10,7 @@ from lib.server_lib.list_files_srv import list_files_server
 from lib.server_lib.uploader import upload_file
 from lib.commands import Command, MessageOption
 from lib.constants import (
+    HARDCODED_BUFFER_SIZE_SR,
     HARDCODED_HOST,
     HARDCODED_PORT,
     HARDCODED_BUFFER_SIZE,
@@ -43,6 +44,7 @@ def handlerSR(channel: queue.Queue, addr, storage_path, exit_signal: Event, prot
                 storage_path,
                 exit_signal,
                 command,
+                verbose
             )
         elif command.option == MessageOption.DOWNLOAD:
             return upload_file(
@@ -53,6 +55,7 @@ def handlerSR(channel: queue.Queue, addr, storage_path, exit_signal: Event, prot
                 storage_path,
                 exit_signal,
                 command,
+                verbose
             )
 
 
@@ -105,6 +108,7 @@ def handlerSW(channel: queue.Queue, addr: tuple[str, int], storage_path, exit_si
                 storage_path,
                 exit_signal,
                 command,
+                verbose
             )
             case MessageOption.LIST_FILES:
                 return list_files_server(channel,socket_to_client,addr,HARDCODED_MOUNT_PATH,exit_signal)
@@ -149,7 +153,7 @@ def main():
         try:
 
             if selective_repeat: 
-                data, addr = sock.recvfrom(1028)   
+                data, addr = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR)   
             else:          
                 data, addr = sock._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
 

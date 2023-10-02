@@ -118,8 +118,6 @@ class ThreeWayHandShake:
                                     return
                             except Exception as e:
                                 channel.put((data,addr))
-                                print(f"putting the data back to channel {e}")
-
                                 return                        
                 raise TimeoutError
 
