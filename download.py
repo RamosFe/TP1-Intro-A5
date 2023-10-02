@@ -53,8 +53,8 @@ def main():
 
     print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
     download_file(None, protocol, args.dst, args.name, args.verbose, args.host, args.port,event)
-
-    sock.close()
+    
+    protocol.close_connection()
     print("Bye! See you next time 😉")
 
 

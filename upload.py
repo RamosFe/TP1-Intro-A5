@@ -90,6 +90,7 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
         protocol.send_message(UPLOAD_FINISH_MSG.encode())
         print("Finish message sent")
         protocol.close_connection()
+        return 
     except TimeoutError:
         print("❌ Error: server did not respond to upload finish message ❌")
     
