@@ -52,3 +52,4 @@ def download_file(
         else:
             socketSR.send_message(response.encode())
         fs_handler.download_file(channel,socketSW,socketSR, comm.name, exit_signal)
+        socketSR.close_connection()

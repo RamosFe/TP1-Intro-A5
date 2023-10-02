@@ -4,6 +4,8 @@ import threading
 from lib.sr_rdt.packet import Packet
 from lib.sr_rdt.receiver_window import ReceiverWindow
 from lib.sr_rdt.sliding_window import SlidingWindow
+
+from threading import Event
 from queue import *
 
 PACKET_SIZE = 512
@@ -14,10 +16,12 @@ class SenderSR:
     _response_queue = None
     _seq_num = None
     _ack_queue = None
+    
 
-    def __init__(self, window_size, response_queue, ack_queue, socket, addr):
+    def __init__(self, window_size, response_queue, ack_queue, socket, addr,stop_event: Event):
         self._window = SlidingWindow(window_size,socket, addr)
         self._response_queue =  response_queue
+        self._stop_event = stop_event
         self._sender = threading.Thread(target=self._send_packets, args=(self._response_queue,socket))
         self._ack_queue = ack_queue
         self._sender.start()
@@ -56,7 +60,8 @@ class SenderSR:
             self._window.receive_ack(ack_num)
 
     def _send_packets(self, response_queue, socket):
-        while True:
+        while not self._stop_event.is_set():
+            
             try:
                 packet = response_queue.get_nowait()
             except Empty:
@@ -74,6 +79,13 @@ class SenderSR:
             socket.sendto(packet.into_bytes(),self._addr)
             self.check_ack_queue()
 
+    def packets_pending(self):
+        #print(f"slice window : {self._window.is_empty()} and _response {self._response_queue.empty()}")
+        print(f"{self._window.len_buf()}")
+        print(f"{self._window.return_buf()}")
+        return not self._window.is_empty() or not self._response_queue.empty()
+
+
 class ReceiverSR:
     _receiver = None
     _window = None
@@ -81,8 +93,9 @@ class ReceiverSR:
     _ack_queue = None
     _msg_queue = None
 
-    def __init__(self, window_size, data_queue, ack_queue, sock, msg_queue, addr):
+    def __init__(self, window_size, data_queue, ack_queue, sock, msg_queue, addr, stop_event):
         self._window = ReceiverWindow(window_size)
+        self.stop_event = stop_event
         self._ack_queue = ack_queue
         self._data_queue = data_queue
         self._msg_queue = msg_queue        
@@ -91,10 +104,13 @@ class ReceiverSR:
 
     def _receive_packets(self, socket, addr):
                 
-        while True:
-            packet = self._data_queue.get(block=True)
-            if packet is None:
-                continue 
+        while not self.stop_event.is_set():            
+            try:
+                packet = self._data_queue.get_nowait()
+                if packet is None:
+                    continue 
+            except Empty:
+                continue
             #ver si el packet es ACK O mensaje, 
             #si es mensaje -> receive window,
             #si es ack -> ACK queue
@@ -124,11 +140,12 @@ class SelectiveRepeatRDT:
     def __init__(self, window_size, data_queue, socket, addr):
         self._socket = socket
         ack_queue = Queue()
+        self._stop_event = Event()
         self._data_queue = data_queue
         self._response_queue = Queue()
-        self._sender = SenderSR(window_size,self._response_queue , ack_queue,socket,addr) #sender sliding window
+        self._sender = SenderSR(window_size,self._response_queue , ack_queue,socket,addr,stop_event=self._stop_event) #sender sliding window
         self._msg_queue = Queue()
-        self._receiver = ReceiverSR(window_size,data_queue, ack_queue, socket, self._msg_queue, addr) # receiver window
+        self._receiver = ReceiverSR(window_size,data_queue, ack_queue, socket, self._msg_queue, addr, stop_event=self._stop_event) # receiver window
                 
     
     '''Recibe el mensaje de capa de aplicación para ser desarmado en paquetes y enviado al destinatario'''
@@ -160,6 +177,20 @@ class SelectiveRepeatRDT:
         return packets
 
     
-    def close_connection(self):
-        if self._socket is not None:
-            self._socket.close()
+    def close_connection(self): 
+        print("Cerrando conexión...")
+        while self.packets_pending():
+            # print("Esperando a que se /envíen todos los paquetes...")
+            continue
+        
+        # Mando señal a los threads para que terminen
+        print("se terminaron de agarrar los paquetes")
+        self._stop_event.set()
+
+
+        # if self._socket is not None:
+        #     self._socket.close()
+
+
+    def packets_pending(self) -> bool:
+        return self._sender.packets_pending()            

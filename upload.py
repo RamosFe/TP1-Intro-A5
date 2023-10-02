@@ -12,13 +12,13 @@ from lib.commands import Command, MessageOption, CommandResponse
 from lib.fs.fs_uploader_client import FileSystemUploaderClient
 from lib.client_lib import utils as parser_utils
 from lib.client_lib import parser
-from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG, HARCODED_BUFFER_SIZE_FOR_FILE
+from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, HARDCODED_TIMEOUT, UPLOAD_FINISH_MSG, HARCODED_BUFFER_SIZE_FOR_FILE
 from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 from lib.rdt.rdt_sw_socket import RdtSWSocket
 
 
 def poll_socket(sock, data_queue):
-    while True:
+    while True:        
         data,_ = sock.recvfrom(1024)                
         data_queue.put(data)
 
@@ -41,8 +41,10 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     # Get the file size
     file_size = fs_handler.get_file_size(path=path)
 
+    
     server_addr = ("127.0.0.1", 6000)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    
     data_queue = queue.Queue()  
     protocol = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, server_addr)
     threading.Thread(target=poll_socket, args=(sock, data_queue)).start()
@@ -86,8 +88,12 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     try:
         # client_socket.sendto(UPLOAD_FINISH_MSG.encode(), addr)
         protocol.send_message(UPLOAD_FINISH_MSG.encode())
+        print("Finish message sent")
+        protocol.close_connection()
     except TimeoutError:
         print("❌ Error: server did not respond to upload finish message ❌")
+    
+
 
 
 if __name__ == "__main__":

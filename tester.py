@@ -1,8 +1,8 @@
 import queue   
 import threading
-from  selective_repeat import SelectiveRepeatRDT
+from  lib.sr_rdt.selective_repeat import SelectiveRepeatRDT
 import socket 
-from packet import *
+from lib.sr_rdt.packet import *
 
 WINDOW_SIZE = 128
 
@@ -107,4 +107,4 @@ def poll_socket2(sock, data_queue):
         #print(f"data: {data}")
         data_queue.put(data)        
 
-#main()
+# main()

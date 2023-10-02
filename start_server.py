@@ -13,7 +13,7 @@ from lib.constants import (
     HARDCODED_TIMEOUT,
     HARDCODED_MOUNT_PATH,
 )
-WINDOW_SIZE = 128
+WINDOW_SIZE = 50
 from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient
 from lib.rdt.socket_interface import SocketInterface
 
@@ -82,7 +82,7 @@ def main(host, port):
 
     # Main loop
     while True:
-        try:
+        # try:
             # data, addr = server_socket._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
             data, addr = sock.recvfrom(HARDCODED_BUFFER_SIZE)            
             # If it is a new client
@@ -105,15 +105,15 @@ def main(host, port):
                 # print("LLEGUE HASTA ACA ")
                 # print(f" data del channel: {channels[addr].get()}")
 
-        except KeyboardInterrupt:
-            print("\nClosing server")
-            close_server(exit_signal_event, clients, sock)
-            break
+        # except KeyboardInterrupt:
+        #     print("\nClosing server")
+        #     close_server(exit_signal_event, clients, sock)
+        #     break
 
-        except Exception as e:
-            print(f"😨 An exception has occurred, please try again -> {e}😨")
-            close_server(exit_signal_event, clients, sock)
-            break
+        # except Exception as e:
+        #     print(f"😨 An exception has occurred, please try again -> {e}😨")
+        #     close_server(exit_signal_event, clients, sock)
+        #     break
 
 
 def close_server(

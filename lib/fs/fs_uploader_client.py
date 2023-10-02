@@ -3,7 +3,7 @@ import math
 from alive_progress import alive_bar
 from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 from lib.rdt.socket_interface import SocketInterface
-from selective_repeat import SelectiveRepeatRDT
+from lib.sr_rdt.selective_repeat import SelectiveRepeatRDT
 
 
 class FileSystemUploaderClient:
