@@ -29,7 +29,7 @@ def poll_socket(sock: socket.socket, data_queue,event):
 
 
 
-def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
+def main(name: str, path: str,selective_repeat : bool, addr: Tuple[str, int], verbose: bool):
     """
     Main function to upload a file to a server.
 
@@ -42,7 +42,6 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     Returns:
         None
     """
-    selective_repeat = True
     # Creates the upload handler
     fs_handler = FileSystemUploaderClient(HARDCODED_CHUNK_SIZE)
     # Get the file size
@@ -123,4 +122,4 @@ if __name__ == "__main__":
     elif not (os.path.exists(args.src) and os.path.isfile(args.src)):
         print(f"❌ Error: file {args.src} does not exist ❌")
     else:
-        main(args.name, args.src, (args.host, args.port), args.verbose)
+        main(args.name, args.src,args.selective_repeat, (args.host, args.port), args.verbose)

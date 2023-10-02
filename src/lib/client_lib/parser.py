@@ -43,7 +43,6 @@ def parse_arguments_upload():
     parser.add_argument("-s", "--src", type=str, help="source file path")
     parser.add_argument("-n", "--name", type=str, help="file name")
     parser.add_argument("-r", "--selective_repeat", action="store_true", help="selective repeat")
-    parser.add_argument("-w", "--stop_wait", action="store_true", help="stop and wait")
     return parser
 
 
@@ -73,5 +72,4 @@ def parse_arguments_download():
     parser.add_argument("-d", "--dst", type=str, help="destination file path")
     parser.add_argument("-n", "--name", type=str, help="file name")
     parser.add_argument("-r", "--selective_repeat", action="store_true", help="selective repeat")
-    parser.add_argument("-w", "--stop_wait", action="store_true", help="stop and wait")
     return parser

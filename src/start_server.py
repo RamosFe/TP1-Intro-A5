@@ -1,3 +1,4 @@
+import os
 import queue
 import socket
 from threading import Thread, Event
@@ -16,6 +17,7 @@ from lib.constants import (
     HARDCODED_MOUNT_PATH,
     HARDCODED_CHUNK_SIZE,
 )
+from lib.server_lib import parser as ps
 
 WINDOW_SIZE = 50
 
@@ -23,9 +25,12 @@ from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient
 from lib.rdt.socket_interface import SocketInterface
 
 
-def handlerSR(channel: queue.Queue, addr, exit_signal: Event, protocol):
+def handlerSR(channel: queue.Queue, addr, storage_path, exit_signal: Event, protocol, verbose):
 
     while not exit_signal.is_set():
+        if verbose:
+            print(f'Connection received from {addr[0]}:{addr[1]}')
+
         data = protocol.receive_message()        
         data = data.decode()
         command = Command.from_str(data)
@@ -35,7 +40,7 @@ def handlerSR(channel: queue.Queue, addr, exit_signal: Event, protocol):
                 None,
                 addr,
                 protocol,
-                HARDCODED_MOUNT_PATH,
+                storage_path,
                 exit_signal,
                 command,
             )
@@ -45,7 +50,7 @@ def handlerSR(channel: queue.Queue, addr, exit_signal: Event, protocol):
                 None,
                 addr,
                 protocol,
-                HARDCODED_MOUNT_PATH,
+                storage_path,
                 exit_signal,
                 command,
             )
@@ -55,7 +60,7 @@ def handlerSR(channel: queue.Queue, addr, exit_signal: Event, protocol):
 
 
 
-def handlerSW(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
+def handlerSW(channel: queue.Queue, addr: tuple[str, int], storage_path, exit_signal: Event, verbose):
     """
     Handles incoming messages from clients and delegates the appropriate action.
 
@@ -71,6 +76,10 @@ def handlerSW(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
 
     socket_to_client = RdtSWSocketClient()
     while not exit_signal.is_set(): 
+
+        if verbose:
+            print(f'Connection received from {addr[0]}:{addr[1]}')
+
         data,addr = channel.get(block=True, timeout=HARDCODED_TIMEOUT)
         data = data.decode()
         command = Command.from_str(data)
@@ -82,9 +91,10 @@ def handlerSW(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
                 socket_to_client,
                 addr,
                 None,
-                HARDCODED_MOUNT_PATH,
+                storage_path,
                 exit_signal,
                 command,
+                verbose,
             )
             case MessageOption.DOWNLOAD:
                 return upload_file(
@@ -92,7 +102,7 @@ def handlerSW(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
                 socket_to_client,
                 addr,
                 None,
-                HARDCODED_MOUNT_PATH,
+                storage_path,
                 exit_signal,
                 command,
             )
@@ -100,7 +110,7 @@ def handlerSW(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
                 return list_files_server(channel,socket_to_client,addr,HARDCODED_MOUNT_PATH,exit_signal)
 
 
-def main(host, port):
+def main():
     """
     Main function to start the server and handle incoming client requests.
 
@@ -111,14 +121,24 @@ def main(host, port):
     Returns:
         None
     """
+
+    args = ps.parse_arguments()
+    if not args.host or not args.port or not args.storage:
+        print('❌ Error: missing required argument(s) ❌')
+        args.print_help()
+        exit(1)
+    if not os.path.exists(args.storage) or not os.path.isdir(args.storage):
+        print(f'❌ Error: {args.storage} is not a directory ❌')
+        exit(1)
+
     exit_signal_event = Event()
-    selective_repeat = True
+    selective_repeat = args.selective_repeat
 
     if selective_repeat:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     else:
         sock = RdtSWSocketClient()   # server_socket
-    sock.bind((host, port))
+    sock.bind((args.host, args.port))
 
     # State variables
     clients: List[Thread] = list()
@@ -126,7 +146,7 @@ def main(host, port):
 
     # Main loop
     while True:
-        # try:
+        try:
 
             if selective_repeat: 
                 data, addr = sock.recvfrom(1028)   
@@ -145,12 +165,12 @@ def main(host, port):
                     # Sends data to the new client
                     
                     new_client = Thread(
-                        target=handlerSR, args=(client_channel, addr, exit_signal_event,protocol)
+                        target=handlerSR, args=(client_channel, addr, args.storage, exit_signal_event,protocol, args.verbose)
                     )
                 else:
                     client_channel.put((data,addr))
                     new_client = Thread(
-                            target=handlerSW, args=(client_channel, addr, exit_signal_event)
+                            target=handlerSW, args=(client_channel, addr, args.storage, exit_signal_event, args.verbose)
                         )
                 clients.append(new_client)
                 new_client.start()                
@@ -162,15 +182,20 @@ def main(host, port):
                     client_channel.put((data,addr))
                 # print(f" data del channel: {channels[addr].get()}")
 
-        # except KeyboardInterrupt:
-        #     print("\nClosing server")
-        #     close_server(exit_signal_event, clients, sock)
-        #     break
+        except KeyboardInterrupt:
+            print("\nServer stopped by the user, exiting...")
+            close_server(exit_signal_event, clients, sock)
+            print("Server closed, bye 👋")
+            break
 
-        # except Exception as e:
-        #     print(f"😨 An exception has occurred, please try again -> {e}😨")
-        #     close_server(exit_signal_event, clients, sock)
-        #     break
+        except Exception as e:
+            print(f"😨 An exception has occurred, please try again 😨") # Borré el {e} para que no explote en la cara del user
+            try:
+
+                close_server(exit_signal_event, clients, sock)
+            except:
+                quit()
+            break
 
 
 
@@ -197,5 +222,5 @@ def close_server(
 
 
 if __name__ == "__main__":
-    main(HARDCODED_HOST, HARDCODED_PORT)
+    main()
 

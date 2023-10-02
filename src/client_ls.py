@@ -35,5 +35,6 @@ if __name__ == '__main__':
     if not parser_utils.verify_params(args, "ls"):
         print("❌ Error: missing required argument(s) ❌")
         args.print_help()
+    
     else:
         main((args.host, args.port))

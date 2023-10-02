@@ -19,6 +19,7 @@ def download_file(
     mount_path: str,
     exit_signal: Event,
     comm: Command,
+    verbose
 ):
     """
     Download a file from a channel and save it to the local file system.
@@ -37,12 +38,17 @@ def download_file(
         If the file does not exist, it sends an OK response and proceeds with the download.
     """
 
+    if verbose:
+            print(f'[{addr[0]}:{addr[1]}] Requested upload of {comm.name}')
+
     fs_handler = FileSystemDownloaderServer(mount_path, HARDCODED_CHUNK_SIZE)
 #TODO CHEQUEAR ESTE MERGE
     if socketSW is not None:
         three_way_handshake = ThreeWayHandShake(socketSW)
         try:
             if fs_handler.file_exists(filename=comm.name):
+                if verbose:
+                    print(f'[{addr[0]}:{addr[1]}] File {comm.name} already exists, cancelling upload ❌')
                 response = CommandResponse.err_response(
                     f"ERR file {comm.name} already exists"
                 ).to_str()

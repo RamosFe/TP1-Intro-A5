@@ -11,23 +11,27 @@ from lib.constants import HARDCODED_CHUNK_SIZE, HARDCODED_BUFFER_SIZE_SR, HARDCO
 from lib.commands import Command, CommandResponse, MessageOption
 from lib.handshake import ThreeWayHandShake
 
-from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient
+from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient, TimeOutErrors
 from lib.rdt.socket_interface import SocketInterface
 
 
 def poll_socket(sock: socket.socket, data_queue, event):
-
+    time_out_errors = TimeOutErrors()
     sock.settimeout(HARDCODED_TIMEOUT)
-    while True:
+    while not time_out_errors.max_tries_exceeded():
         if event.is_set():
             sock.settimeout(None)
             break
-        # print("is blocked")
         try:        
             data,_ = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR)                
             data_queue.put(data)
         except TimeoutError:
+            time_out_errors.increase_try()
             continue
+    print("❌ Connection lost due to multiple tries ❌!!!!")
+    if time_out_errors.max_tries_exceeded():
+        raise TimeoutError
+    
     # print(f" el evento termino : {event.is_set()}")
 
 def main():
@@ -39,43 +43,50 @@ def main():
     Returns:
         None
     """
-    args = parser.parse_arguments("download")
-    print(f"los argumentos son {args.selective_repeat}")
-    selective_repeat = True
-
-    if not parser_utils.verify_params(args, "download"):
-        print("❌ Error: missing required argument(s) ❌")
-        args.print_help()
-        return
-
-    if os.path.exists(args.dst) and os.path.isdir(args.dst):
-        print(f"❌ Error: {args.dst} is a directory ❌")
-        return
-
     try:
-        if selective_repeat:
-            event = Event()
-            server_addr = ("127.0.0.1", 6000)
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            data_queue = queue.Queue()  
-            protocol = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, server_addr)
-            threading.Thread(target=poll_socket, args=(sock, data_queue,event)).start()
+            
+        args = parser.parse_arguments("download")
+        
+        selective_repeat = args.selective_repeat
+        if not parser_utils.verify_params(args, "download"):
+            print("❌ Error: missing required argument(s) ❌")
+            args.print_help()
+            return
 
-            print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
-            download_file(None, protocol, args.dst, args.name, args.verbose, args.host, args.port,event)
-            protocol.close_connection()
-        else:
-            client_socket = RdtSWSocketClient()
-            print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
-            download_file(client_socket,None, args.dst, args.name, args.verbose, args.host, args.port,None)
-            client_socket.close()
-    except TimeoutError:
-        close_connections(client_socket,protocol,event)
-        print("❌ Connection Timeout Error ❌")
-        return
+        if os.path.exists(args.dst) and os.path.isdir(args.dst):
+            print(f"❌ Error: {args.dst} is a directory ❌")
+            return
 
-    print("Bye! See you next time 😉")
-    quit()
+        try:
+            if selective_repeat:
+                event = Event()
+                server_addr = ("127.0.0.1", 6000)
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                data_queue = queue.Queue()  
+                protocol = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, server_addr)
+                threading.Thread(target=poll_socket, args=(sock, data_queue,event)).start()
+                
+                print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
+                download_file(None, protocol, args.dst, args.name, args.verbose, args.host, args.port,event)
+                protocol.close_connection()
+                # th.jo
+            else:
+                client_socket = RdtSWSocketClient()
+                print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
+                download_file(client_socket,None, args.dst, args.name, args.verbose, args.host, args.port,None)
+                client_socket.close()
+        except TimeoutError:
+            print("NO LLEGA????")
+            close_connections(client_socket,protocol,event)
+            print("❌ Connection Timeout Error ❌")
+            return
+
+        print("Bye! See you next time 😉")
+        quit()
+    except KeyboardInterrupt:
+        print("Ctrl c, Bye! See you next time 😉")
+        quit()
+
 
 
 def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, verbose: bool, host: str, port: int, event):
