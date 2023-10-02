@@ -40,6 +40,7 @@ class FileSystemUploaderClient:
         return os.path.getsize(path)
 
     def upload_file(self, senderSW, senderSR, addr: str, path: str, name: str, verbose: bool):
+
         """
         Upload a file to a server.
 
@@ -60,15 +61,14 @@ class FileSystemUploaderClient:
                 print(f"-> Uploading file {name}")
 
             with alive_bar(steps, bar="bubbles", title=f"↑ {name}") as bar:
-                # data = file.read()
-                # sender.sendto(data, addr)
-                # bar()
+                #TODO VER ESTE merge
                 for chunk in iter(lambda: file.read(self._chunk_size), b""):
                     try:
                         if senderSW is not None:
                             senderSW.sendto(chunk, addr)
                         else:
                             senderSR.send_message(chunk)
+
                     except TimeoutError:
                         raise TimeoutError
                     bar()

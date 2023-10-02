@@ -43,7 +43,8 @@ class FileSystemDownloaderServer:
         """
         return os.path.exists(os.path.join(self._mount_path, filename))
 
-    def download_file(self, channel: queue.Queue,socket: RdtSWSocketClient,socketSR, path: str, exit_signal: Event):
+    def download_file(self, channel: queue.Queue,socketSW: RdtSWSocketClient,socketSR, path: str, exit_signal: Event):
+
         """
         Download a file from a queue channel and save it to the specified path.
 
@@ -58,18 +59,18 @@ class FileSystemDownloaderServer:
         Note:
             The download process continues until either the queue is empty and the exit_signal is not set
             or an "UPLOAD_FINISH_MSG" is received in the data.
-        """        
+|   """ 
         with open(os.path.join(self._mount_path, path), "wb") as file:
-            i = 0
             try:
-                while not exit_signal.is_set():                
-                    # data = socket.recv_with_queue(channel)                
-                    data = socketSR.receive_message()
+                while not exit_signal.is_set():
+                    #TODO CHEQUEAR ESTE MERGE
+                    if socketSW is not None:
+                        data = socketSW.recv_with_queue(channel)
+                    else:
+                        data = socketSR.receive_message()
                     if data is None:
                         continue
                     if UPLOAD_FINISH_MSG.encode() in data:
-                        # file.write(data[:data.index(UPLOAD_FINISH_MSG.encode())])
-                        print("Closing download")                        
                         return
                     file.write(data)
                 print("Closing download")

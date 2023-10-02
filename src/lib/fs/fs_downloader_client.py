@@ -49,6 +49,7 @@ class FileSystemDownloaderClient:
 
     def download_file(
         self, socketSW, socketSR,path: str, size: int, exit_signal: Event
+
     ):
         """
         Download a file from a socket and save it to the specified path with progress.
@@ -65,12 +66,24 @@ class FileSystemDownloaderClient:
         steps = math.ceil(size / self._chunk_size)
         with alive_bar(steps, bar="bubbles", title=f"↓ {path}") as bar:
             with open(os.path.join(self._mount_path, path), "wb") as file:
+
+                # TODO CHEQUEAR ESTE MERGE
+                initial = True
                 try:
                     while not exit_signal.isSet():
-                        if socketSW is not None:
-                            data = socketSW.recv(HARDCODED_BUFFER_SIZE)
+                        if initial :
+                            print("first receive")
+                            if socketSW is not None:
+                                data = socketSW.recv(HARDCODED_BUFFER_SIZE,first_data,addr)
+                                initial = False
+                            else:
+                                data = socketSR.receive_message() 
                         else:
-                            data = socketSR.receive_message()
+                            print("receiving second data")
+                            if socketSW is not None:
+                                data = socket.recv(HARDCODED_BUFFER_SIZE,None,None)
+                            else:
+                                data = socketSR.receive_message()
                         if data is None:
                             continue
                         if UPLOAD_FINISH_MSG.encode() in data:

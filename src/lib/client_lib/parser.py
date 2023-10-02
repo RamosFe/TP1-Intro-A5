@@ -14,11 +14,13 @@ def parse_arguments(command):
     parser = None
     if command == "upload":
         parser = parse_arguments_upload()
-    else:
+
+    elif command == "download":
         parser = parse_arguments_download()
-
+    else: 
+        parser = parse_arguments_ls()
     args = parser.parse_args()
-
+    
     return args
 
 
@@ -40,6 +42,13 @@ def parse_arguments_upload():
     parser.add_argument("-p", "--port", type=int, help="server port")
     parser.add_argument("-s", "--src", type=str, help="source file path")
     parser.add_argument("-n", "--name", type=str, help="file name")
+    return parser
+
+
+def parse_arguments_ls():
+    parser = argparse.ArgumentParser(description="ls")
+    parser.add_argument("-H", "--host", type=str, help="server IP address")
+    parser.add_argument("-p", "--port", type=int, help="server port")
     return parser
 
 

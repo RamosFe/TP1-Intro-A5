@@ -7,7 +7,11 @@ HARDCODED_PORT = 6000
 HARDCODED_TIMEOUT = 1
 
 # Maximum number of times to try a timeout operation
-HARDCODED_MAX_TIMEOUT_TRIES = 4
+
+HARDCODED_MAX_TIMEOUT_TRIES = 10
+
+# Timeout for receiving input from the user
+HARDCODED_TIMEOUT_FOR_RECEIVING_INPUT = 40
 
 # Chunk size for file transfer
 HARDCODED_CHUNK_SIZE = 1024
@@ -23,6 +27,8 @@ HARDCODED_BUFFER_SIZE = HARDCODED_CHUNK_SIZE + PACKET_HEADER_SIZE
 # Message indicating the end of an upload
 UPLOAD_FINISH_MSG = "FINARDO"
 
+
+LIST_FILES_FINISH = "FINARDO"
+
 # Mount path for server files (directory where files are stored)
 HARDCODED_MOUNT_PATH = "./server_files/"
-

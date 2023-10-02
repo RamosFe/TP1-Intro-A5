@@ -105,6 +105,7 @@ class RdtSWSocketClient:
         """
         self._internal_socket.bind(addr)
 
+
     def sendto(self, data, addr: tuple[str, int]):
         """
         Sends data to the specified address using the internal socket.
@@ -116,13 +117,8 @@ class RdtSWSocketClient:
         
         # Obtengo la cantidad de chunks en el paquete
         packets_len = math.ceil(len(data) / HARDCODED_CHUNK_SIZE) 
-        # Inicializo el counter usado para el sequence number
-        # counter = ModuleNCounter(2)
-        global_time = time.time()
-        
-        # TODO Delete debug print
-        # print(f"packets_len:{ packets_len}")
 
+ 
         # Seteo timeout del socket
         self._internal_socket.settimeout(HARDCODED_TIMEOUT) 
         
@@ -141,7 +137,8 @@ class RdtSWSocketClient:
                 self._internal_socket.sendto(data_packet.to_send(),addr)
                 
                     # Espero el ACK
-                self._recv_ack(addr,global_time, data_packet)
+
+                self._recv_ack(addr, data_packet)
                 
         except TimeoutError:  #FEDE-NOTES Timeout no relacionado con problema de RDT
                 raise TimeoutError
@@ -149,17 +146,19 @@ class RdtSWSocketClient:
 
 
 
-    def _recv_ack(self, addr: tuple[str,int], global_time: float, data_packet):
+
+    def _recv_ack(self, addr: tuple[str,int],  data_packet):
         # Addr del propietario del mensaje recibido
         receive_addr = None
         # Timeout para RDT en caso de desconexion
-        time_out_errors = TimeOutErrors(time.time(),global_time)
+        time_out_errors = TimeOutErrors()
         
         # Mientras no pase el numero de intentos para mandar el paquete definido por el HARDCODED_MAX_TIMEOUT_PACKET, labura
+
         while not time_out_errors.max_tries_exceeded():
             try:
                 receive, receive_addr = self._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
-                # print(f"it received {receive} from {receive_addr}")
+                print(f"it received {receive} from {receive_addr}")
                 # Caso que el sequence number es distinto al esperado
                 ack_receive = AckSequenceNumer.from_bytes(receive)
                 if ack_receive.ack != self.counter.get_value():
@@ -180,6 +179,10 @@ class RdtSWSocketClient:
                 time_out_errors.increase_try()
                 self._internal_socket.sendto(data_packet.to_send(),addr)
 
+        if time_out_errors.max_tries_exceeded():
+            raise TimeoutError
+
+
 
 
 
@@ -187,14 +190,7 @@ class RdtSWSocketClient:
         # Obtengo la cantidad de chunks en el paquete
         packets_len = math.ceil(len(data) / HARDCODED_CHUNK_SIZE) 
         # Inicializo el counter usado para el sequence number
-        global_time = time.time()
-        
-        # TODO Delete debug print
-        # print(f"packets_len:{ packets_len}")
 
-        # Seteo timeout del socket - Borrado porque no se usa el recv de este socket
-        # self._internal_socket.settimeout(HARDCODED_TIMEOUT) 
-        print("--DEBUG-- sending data with queue")
         # Por cada chunk
         try:
             for i in range(packets_len):
@@ -210,19 +206,21 @@ class RdtSWSocketClient:
                 self._internal_socket.sendto(data_packet.to_send(),addr)
                 
                 # Espero el ACK
-                self._recv_ack_with_queue(addr,global_time, data_packet, channel=channel)
+
+                self._recv_ack_with_queue(addr, data_packet, channel=channel)
                 
         except TimeoutError:  #FEDE-NOTES Timeout no relacionado con problema de RDT
                 raise TimeoutError
                 # print("Handle Timeout error sending packets")
     
-    def _recv_ack_with_queue(self, addr: tuple[str,int], global_time: float, data_packet, channel: queue.Queue):
+
+    def _recv_ack_with_queue(self, addr: tuple[str,int], data_packet, channel: queue.Queue):
         # Addr del propietario del mensaje recibido
         receive_addr = None
         # Timeout para RDT en caso de desconexion
-        time_out_errors = TimeOutErrors(time.time(),global_time)
+        time_out_errors = TimeOutErrors()
         
-        print("--DEBUG-- waiting for ack with queue")
+        # print("--DEBUG-- waiting for ack with queue")
 
         # Mientras no pase el numero de intentos para mandar el paquete definido por el HARDCODED_MAX_TIMEOUT_PACKET, labura
         while not time_out_errors.max_tries_exceeded():
@@ -243,17 +241,22 @@ class RdtSWSocketClient:
             
             except queue.Empty:
                 print(f"--DEBUG-- salto el timeout juju")
-                if time_out_errors.max_tries_exceeded():  #TODO cambiar por una variable que se va sumando
+
+                if time_out_errors.max_tries_exceeded() == True:  #TODO cambiar por una variable que se va sumando
                     print("--DEBUG-- no se reenvia el paquete raise ERROR : ", time_out_errors.tries)
                     raise TimeoutError
                 print("--DEBUG-- se reenvia el paquete con try : ", time_out_errors.tries)
                 time_out_errors.increase_try()
                 self._internal_socket.sendto(data_packet.to_send(),addr)
 
+        if time_out_errors.max_tries_exceeded():
+            raise TimeoutError
+        
+
 
  
 
-    def recv(self, bufsize: int) -> bytes:
+    def recv(self, bufsize: int, data = None,addr = None) -> bytes:
         """
         Receives data from the socket with the given buffer size.
 
@@ -263,8 +266,9 @@ class RdtSWSocketClient:
         Returns:
             bytes: The received data as bytes.
         """
-        
-        data,addr = self._internal_socket.recvfrom(bufsize)
+        self._internal_socket.settimeout(None)
+        if addr is None:
+            data,addr = self._internal_socket.recvfrom(bufsize)
         self.addr = addr
         packet = RDTStopWaitPacket.from_bytes(data)
         self._internal_socket.sendto(packet.encode_ack(packet.ack),(HARDCODED_HOST,HARDCODED_PORT) )   # TODO poner bonito lo del HARDCODED
@@ -311,6 +315,16 @@ class RdtSWSocketClient:
         """
         return self.recv_with_queue(channel), self.addr
 
+
+    def send_with_internal_socket(self,data,addr):
+        self._internal_socket.sendto(data,addr)
+
+    def recv_with_internal_socket(self,bufsize):
+        return self._internal_socket.recvfrom(bufsize)
+    
+    def set_timeout(self, timeout):
+        self._internal_socket.settimeout(timeout)
+
     def close(self):
         """
         Closes the internal socket.
@@ -322,18 +336,30 @@ class RdtSWSocketClient:
 class TimeOutErrors:
 
 
-    def __init__(self,local_time: float, global_time: float):
 
-        self.local_time = local_time
-        self.global_time = global_time
+    def __init__(self):
         self.tries = 0
 
     def increase_try(self):
         self.tries +=1
 
 
+
+    def get_tries(self):
+        return self.tries
+
     def max_tries_exceeded(self):
-        return self.tries >= HARDCODED_MAX_TIMEOUT_TRIES
+        
+        return self.tries > HARDCODED_MAX_TIMEOUT_TRIES
+    
+    def get_timeout(self):
+        return HARDCODED_TIMEOUT
+
+    def time_to_receive_data(self):
+        start_time = time.time()
+        end_time = start_time + HARDCODED_TIMEOUT
+        return time.time() < end_time
+
 
 
 
