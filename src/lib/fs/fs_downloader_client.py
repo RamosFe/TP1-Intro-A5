@@ -48,7 +48,7 @@ class FileSystemDownloaderClient:
         return os.path.exists(os.path.join(self._mount_path, filename))
 
     def download_file(
-        self, socketSW, socketSR,path: str, size: int, exit_signal: Event
+        self, socketSW, socketSR,path: str, size: int, exit_signal: Event,first_data,addr
 
     ):
         """
@@ -81,7 +81,7 @@ class FileSystemDownloaderClient:
                         else:
                             print("receiving second data")
                             if socketSW is not None:
-                                data = socket.recv(HARDCODED_BUFFER_SIZE,None,None)
+                                data = socketSW.recv(HARDCODED_BUFFER_SIZE,None,None)
                             else:
                                 data = socketSR.receive_message()
                         if data is None:

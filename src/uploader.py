@@ -43,7 +43,7 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     Returns:
         None
     """
-    selective_repeat = True
+    selective_repeat = False
     # Creates the upload handler
     fs_handler = FileSystemUploaderClient(HARCODED_BUFFER_SIZE_FOR_FILE)
     # Get the file size

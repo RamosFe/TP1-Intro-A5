@@ -111,9 +111,7 @@ def main(host, port):
     """
     exit_signal_event = Event()
     selective_repeat = True
-    # server_socket = RdtSWSocketClient()
-    # server_socket.bind((host, port))
-    # TODO CHECK IF SOCKET SW O SR
+    
     if selective_repeat:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     else:
