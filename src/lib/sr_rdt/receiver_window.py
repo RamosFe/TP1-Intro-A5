@@ -3,16 +3,20 @@
 class ReceiverWindow:
     window = None
     base_seq = None
+    window_size = None
+    received = None
 
     def __init__(self, window_size):
         self.window = []
         self.window_size = window_size
         self.base_seq = 1
+        self.received = set()
 
     def add_packet(self, packet) -> bool :    
         if self.window_size + self.base_seq < packet.seq_num:
             return False
         self.window.append(packet) 
+        self.received.add(packet.seq_num)
         return True
     
     def get_ordered_packets(self) -> list:
@@ -35,3 +39,8 @@ class ReceiverWindow:
             else:
                 break
         return packets
+
+    def already_received(self, seq_num) -> bool:
+        return seq_num in self.received
+
+        

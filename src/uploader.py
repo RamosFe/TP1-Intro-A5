@@ -4,14 +4,13 @@ import threading
 from lib.sr_rdt.selective_repeat import SelectiveRepeatRDT
 
 import  queue   
-from tester import WINDOW_SIZE
 from typing import Tuple
 
 from lib.commands import Command, MessageOption, CommandResponse
 from lib.fs.fs_uploader_client import FileSystemUploaderClient
 from lib.client_lib import utils as parser_utils
 from lib.client_lib import parser
-from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, HARDCODED_TIMEOUT, UPLOAD_FINISH_MSG, HARCODED_BUFFER_SIZE_FOR_FILE
+from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_CHUNK_SIZE, HARDCODED_TIMEOUT, UPLOAD_FINISH_MSG, HARCODED_BUFFER_SIZE_FOR_FILE, WINDOW_SIZE
 from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 from lib.rdt.rdt_sw_socket import RdtSWSocket
 from lib.handshake import ThreeWayHandShake
@@ -43,7 +42,7 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     Returns:
         None
     """
-    selective_repeat = False
+    selective_repeat = True
     # Creates the upload handler
     fs_handler = FileSystemUploaderClient(HARCODED_BUFFER_SIZE_FOR_FILE)
     # Get the file size
@@ -85,7 +84,7 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     # If error, return
     if response_command.is_error():
         print(f"❌ Request rejected -> {response_command._msg} ❌")
-        return
+        quit()
 
     if verbose:
         print("✔ Request accepted ✔")

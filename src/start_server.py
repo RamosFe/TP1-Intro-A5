@@ -24,7 +24,7 @@ from lib.rdt.socket_interface import SocketInterface
 
 def handlerSR(channel: queue.Queue, addr, exit_signal: Event, protocol):
 
-    while not exit_signal.is_set(): # TODO Si nos da error lo borramos  
+    while not exit_signal.is_set():
         data = protocol.receive_message()        
         data = data.decode()
         command = Command.from_str(data)
@@ -69,8 +69,9 @@ def handlerSW(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
 
 
     socket_to_client = RdtSWSocketClient()
-    while not exit_signal.is_set(): # TODO Si nos da error lo borramos
-        data = channel.get(block=True, timeout=HARDCODED_TIMEOUT)[0].decode() # TODO CAMBIAR ESTO; SOLO AGARRA EL COMANDO, no el addr : (Message_command Encodeado, addr)
+    while not exit_signal.is_set(): 
+        data,addr = channel.get(block=True, timeout=HARDCODED_TIMEOUT)
+        data = data.decode()
         command = Command.from_str(data)
         print(f"Received command {command.option} from client at {addr}")
         match command.option:
@@ -111,7 +112,7 @@ def main(host, port):
     """
     exit_signal_event = Event()
     selective_repeat = True
-    
+
     if selective_repeat:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     else:

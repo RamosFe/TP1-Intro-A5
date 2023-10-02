@@ -112,8 +112,8 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
     command = CommandResponse(response)
     print("-> Server response: ", response)
     if command.is_error():
-        print(f"❌ Request rejected -> {command._msg} ❌") # TODO OK RECIBI EL ERR
-        return
+        print(f"❌ Request rejected -> {command._msg} ❌") 
+        quit()
 
     if verbose:
         print("✔ Request accepted ✔")
@@ -125,7 +125,7 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
         print("❌ Download canceled ❌")
         response = CommandResponse.err_response("ERR Download canceled").to_str()
         if socketSW is not None:
-            socketSW._internal_socket.sendto(response.encode(), (host, port)) # TODO VER ERROR DE DOWNLOAD
+            socketSW._internal_socket.sendto(response.encode(), (host, port)) 
         else:
             socketSR.send_message(response.encode())
         return
@@ -148,7 +148,7 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
 
         fs_handler.download_file(socketSW,socketSR, dest, size, Event(),first_data,addr)
     else:
-        fs_handler.download_file(socketSW,socketSR, dest, size, Event(),None,None)
+        fs_handler.download_file(socketSW,socketSR, dest, size, Event(), None, None)
 
     if verbose:
         print(f"✔ File {name} downloaded successfully ✔")

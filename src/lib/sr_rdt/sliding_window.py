@@ -2,8 +2,8 @@ import socket
 import threading
 import time
 
-TIME_WAIT = 1
-TOP_TIMEOUTS = 5
+from lib.constants import HARDCODED_MAX_TIMEOUT_TRIES, HARDCODED_TIMEOUT
+
 
 # TODO: Agregar addres de destino
 class SlidingWindow:
@@ -18,7 +18,7 @@ class SlidingWindow:
         # Si hay espacio en la ventana
         if len(self.buffer) < self.window_size:
             # Creo timer de ese paquete
-            packet.timer = threading.Timer(TIME_WAIT, self.timeout, [packet])
+            packet.timer = threading.Timer(HARDCODED_TIMEOUT, self.timeout, [packet])
             packet.timer.start()
             # Agrego el paquete al buffer
             self.buffer.append(packet)
@@ -37,18 +37,19 @@ class SlidingWindow:
         return None
 
     def timeout(self, packet):
-        print(f"Timeout for packet {packet.seq_num}")
+        print(f"Timeout for packet {packet.seq_num}, data: {packet.get_data()}")
         if self.base_seq_num <= packet.seq_num < self.base_seq_num + self.window_size:
-            if packet.timeouts >= TOP_TIMEOUTS:
+            if packet.timeouts >= HARDCODED_MAX_TIMEOUT_TRIES:
+                
                 with open("client_log.txt", "a") as f:
-                    f.write(f"Pkt:{packet.seq_num} has timeouted {TOP_TIMEOUTS} times\n")
+                    f.write(f"Pkt:{packet.seq_num} has timeouted {HARDCODED_MAX_TIMEOUT_TRIES} times\n")
                 # TODO bye conexión
                 pass
             else:
                 with open("client_log.txt", "a") as f:
                     f.write(f"Pkt:{packet.seq_num} has timeouted. Resending..\n")
                 self.socket.sendto(packet.into_bytes(), self.addr)
-                packet.timer = threading.Timer(TIME_WAIT, self.timeout, [packet])
+                packet.timer = threading.Timer(HARDCODED_MAX_TIMEOUT_TRIES, self.timeout, [packet])
                 packet.timer.start()
                 packet.timeouts += 1
 

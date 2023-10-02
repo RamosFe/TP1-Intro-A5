@@ -22,12 +22,14 @@ class SenderSR:
         self._window = SlidingWindow(window_size,socket, addr)
         self._response_queue =  response_queue
         self._stop_event = stop_event
-        self._sender = threading.Thread(target=self._send_packets, args=(self._response_queue,socket))
         self._ack_queue = ack_queue
-        self._sender.start()
         self._seq_num = 1
         self._socket = socket
         self._addr = addr
+
+        self._sender = threading.Thread(target=self._send_packets, args=(self._response_queue,socket))
+        self._sender.start()
+
 
         
 
@@ -55,8 +57,8 @@ class SenderSR:
             ack_num = self._ack_queue.get()
             
             
-            with open("client_log.txt", "a") as f:
-                f.write(f"Received ack: {ack_num}\n")
+            # with open("client_log.txt", "a") as f:
+            #     f.write(f"Received ack: {ack_num}\n")
             self._window.receive_ack(ack_num)
 
     def _send_packets(self, response_queue, socket):
@@ -119,17 +121,24 @@ class ReceiverSR:
             if packet.is_ack():               
                 self._ack_queue.put(packet.seq_num)                
                 continue
+            
+            # TODO -> si llega un paquete repetido hay que manejarlo
+            
+            if self._window.already_received(packet.seq_num): 
+                ack = Packet(packet.seq_num, b'ACK')
+                socket.sendto(ack.into_bytes(), addr)
+                continue
 
             if not self._window.add_packet(packet):    
                 continue
             
             ack = Packet(packet.seq_num, b'ACK')
             socket.sendto(ack.into_bytes(), addr)
-            
+            # TODO ventana llena y paquete faltante y ver este sort
             packets = self._window.get_ordered_packets()
             for pkt in packets:               
                 self._msg_queue.put(pkt)
-            
+                                                             
 
 class SelectiveRepeatRDT:
     _socket = None
@@ -143,8 +152,8 @@ class SelectiveRepeatRDT:
         self._stop_event = Event()
         self._data_queue = data_queue
         self._response_queue = Queue()
-        self._sender = SenderSR(window_size,self._response_queue , ack_queue,socket,addr,stop_event=self._stop_event) #sender sliding window
         self._msg_queue = Queue()
+        self._sender = SenderSR(window_size,self._response_queue , ack_queue,socket,addr,stop_event=self._stop_event) #sender sliding window
         self._receiver = ReceiverSR(window_size,data_queue, ack_queue, socket, self._msg_queue, addr, stop_event=self._stop_event) # receiver window
                 
     
@@ -152,6 +161,8 @@ class SelectiveRepeatRDT:
     def send_message(self, data):
         # Primero armamos los paquetes a partir de la data.
         
+        while self._response_queue.qsize() > 8:
+            continue  # TODO SACAR SI NO ENTRA
 
         packets = self._sender._make_packets(data)
         for packet in packets:

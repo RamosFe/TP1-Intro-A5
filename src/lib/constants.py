@@ -27,11 +27,11 @@ HARDCODED_BUFFER_SIZE = HARDCODED_CHUNK_SIZE + PACKET_HEADER_SIZE
 # Message indicating the end of an upload
 UPLOAD_FINISH_MSG = "FINARDO"
 
-
 LIST_FILES_FINISH = "FINARDO"
 
 # Mount path for server files (directory where files are stored)
 HARDCODED_MOUNT_PATH = "./server_files/"
 
 
-WINDOW_SIZE = 50
+WINDOW_SIZE = 20
+

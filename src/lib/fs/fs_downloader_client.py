@@ -72,7 +72,7 @@ class FileSystemDownloaderClient:
                 try:
                     while not exit_signal.isSet():
                         if initial :
-                            print("first receive")
+                            #print("first receive")
                             if socketSW is not None:
                                 data = socketSW.recv(HARDCODED_BUFFER_SIZE,first_data,addr)
                                 initial = False
