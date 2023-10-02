@@ -17,10 +17,18 @@ from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 from lib.rdt.rdt_sw_socket import RdtSWSocket
 
 
-def poll_socket(sock, data_queue):
-    while True:        
-        data,_ = sock.recvfrom(1024)                
-        data_queue.put(data)
+def poll_socket(sock: socket.socket, data_queue,event):
+    sock.settimeout(HARDCODED_TIMEOUT)
+    while True:
+        if event.is_set():
+            sock.settimeout(None)
+            break
+        try:
+            data,_ = sock.recvfrom(1024)                
+            data_queue.put(data)
+        except TimeoutError:
+            continue
+
 
 def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     """
@@ -44,10 +52,11 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     
     server_addr = ("127.0.0.1", 6000)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    stop_event = threading.Event()
     
     data_queue = queue.Queue()  
     protocol = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, server_addr)
-    threading.Thread(target=poll_socket, args=(sock, data_queue)).start()
+    threading.Thread(target=poll_socket, args=(sock, data_queue,stop_event)).start()
     # # Creates the client socket
     # client_socket = RdtSWSocketClient()
 
@@ -90,6 +99,7 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
         protocol.send_message(UPLOAD_FINISH_MSG.encode())
         print("Finish message sent")
         protocol.close_connection()
+        stop_event.set()
         return 
     except TimeoutError:
         print("❌ Error: server did not respond to upload finish message ❌")

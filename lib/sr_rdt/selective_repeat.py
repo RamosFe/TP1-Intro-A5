@@ -81,8 +81,8 @@ class SenderSR:
 
     def packets_pending(self):
         #print(f"slice window : {self._window.is_empty()} and _response {self._response_queue.empty()}")
-        print(f"{self._window.len_buf()}")
-        print(f"{self._window.return_buf()}")
+        # print(f"{self._window.len_buf()}")
+        # print(f"{self._window.return_buf()}")
         return not self._window.is_empty() or not self._response_queue.empty()
 
 

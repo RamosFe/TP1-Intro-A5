@@ -6,7 +6,7 @@ import queue
 from lib.sr_rdt.selective_repeat import SelectiveRepeatRDT
 from lib.fs.fs_downloader_client import FileSystemDownloaderClient
 from lib.client_lib import parser, utils as parser_utils
-from lib.constants import HARDCODED_CHUNK_SIZE, HARDCODED_BUFFER_SIZE
+from lib.constants import HARDCODED_CHUNK_SIZE, HARDCODED_BUFFER_SIZE, HARDCODED_TIMEOUT
 from lib.commands import Command, CommandResponse, MessageOption
 
 from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient
@@ -16,13 +16,20 @@ from lib.rdt.socket_interface import SocketInterface
 WINDOW_SIZE = 128
 
 
-def poll_socket(sock, data_queue, event):
+def poll_socket(sock: socket.socket, data_queue, event):
+
+    sock.settimeout(HARDCODED_TIMEOUT)
     while True:
         if event.is_set():
+            sock.settimeout(None)
             break
-        
-        data,_ = sock.recvfrom(1024)                
-        data_queue.put(data)
+        # print("is blocked")
+        try:        
+            data,_ = sock.recvfrom(1024)                
+            data_queue.put(data)
+        except TimeoutError:
+            continue
+    # print(f" el evento termino : {event.is_set()}")
 
 def main():
     """

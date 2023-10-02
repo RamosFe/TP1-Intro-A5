@@ -102,7 +102,6 @@ def main(host, port):
             else:
                 # Send to the respective thread
                 channels[addr].put(data)
-                # print("LLEGUE HASTA ACA ")
                 # print(f" data del channel: {channels[addr].get()}")
 
         # except KeyboardInterrupt:
