@@ -3,6 +3,7 @@ import socket
 from threading import Thread, Event
 from typing import List, Dict, Tuple
 from lib.server_lib.downloader import download_file
+from lib.server_lib.list_files_srv import list_files_server
 from lib.server_lib.uploader import upload_file
 from lib.commands import Command, MessageOption
 from lib.constants import (
@@ -34,8 +35,10 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
     while not exit_signal.is_set(): # TODO Si nos da error lo borramos
         data = channel.get(block=True, timeout=HARDCODED_TIMEOUT)[0].decode() # TODO CAMBIAR ESTO; SOLO AGARRA EL COMANDO, no el addr : (Message_command Encodeado, addr)
         command = Command.from_str(data)
-        if command.option == MessageOption.UPLOAD:
-            return download_file(
+        print(f"Received command {command.option} from client at {addr}")
+        match command.option:
+            case MessageOption.UPLOAD:
+                return download_file(
                 channel,
                 socket_to_client,
                 addr,
@@ -43,8 +46,8 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
                 exit_signal,
                 command,
             )
-        elif command.option == MessageOption.DOWNLOAD:
-            return upload_file(
+            case MessageOption.DOWNLOAD:
+                return upload_file(
                 channel,
                 socket_to_client,
                 addr,
@@ -52,6 +55,9 @@ def handler(channel: queue.Queue, addr: tuple[str, int], exit_signal: Event):
                 exit_signal,
                 command,
             )
+            case MessageOption.LIST_FILES:
+                return list_files_server(channel,socket_to_client,addr,HARDCODED_MOUNT_PATH,exit_signal)
+        
 
 def main(host, port):
     """

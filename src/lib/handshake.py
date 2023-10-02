@@ -14,10 +14,9 @@ class ThreeWayHandShake:
         self.time_out_errors = TimeOutErrors()
 
     def send(self, response, addr):
-        
+    
         print("--DEBUG-- sending data : ", response)
         # Mientras no pase el numero de intentos para mandar el paquete definido por el HARDCODED_MAX_TIMEOUT_PACKET, labura
-
         self.socket.set_timeout(self.time_out_errors.get_timeout())
 
         while not self.time_out_errors.max_tries_exceeded():

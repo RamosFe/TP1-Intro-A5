@@ -12,6 +12,7 @@ class MessageOption(Enum):
     """
     UPLOAD = "UPLOAD"
     DOWNLOAD = "DOWNLOAD"
+    LIST_FILES = "LIST_FILES"
 
 
 class Command:

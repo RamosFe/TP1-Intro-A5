@@ -119,12 +119,8 @@ class RdtSWSocketClient:
         
         # Obtengo la cantidad de chunks en el paquete
         packets_len = math.ceil(len(data) / HARDCODED_CHUNK_SIZE) 
-        # Inicializo el counter usado para el sequence number
-        # counter = ModuleNCounter(2)
         
-        # TODO Delete debug print
-        # print(f"packets_len:{ packets_len}")
-
+        print(f"packets_len:{ packets_len}")
         # Seteo timeout del socket
         self._internal_socket.settimeout(HARDCODED_TIMEOUT) 
         
@@ -194,12 +190,6 @@ class RdtSWSocketClient:
         packets_len = math.ceil(len(data) / HARDCODED_CHUNK_SIZE) 
         # Inicializo el counter usado para el sequence number
         
-        # TODO Delete debug print
-        # print(f"packets_len:{ packets_len}")
-
-        # Seteo timeout del socket - Borrado porque no se usa el recv de este socket
-        # self._internal_socket.settimeout(HARDCODED_TIMEOUT) 
-        print("--DEBUG-- sending data with queue")
         # Por cada chunk
         try:
             for i in range(packets_len):
