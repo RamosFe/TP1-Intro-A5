@@ -50,7 +50,7 @@ def download_file(
             else:
                 response = CommandResponse.ok_response().to_str()
                 three_way_handshake.send_with_queue(response, addr,channel)
-                fs_handler.download_file(channel,socketSW, comm.name, exit_signal)
+                fs_handler.download_file(channel,socketSW,None, comm.name, exit_signal)
         except TimeoutError:
             print(" --FEBUG-- Yo soy el timeout y ordeno que Tomi y Cami Ayala salgan a tomar una birra")
             return

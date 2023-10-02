@@ -110,7 +110,7 @@ def main(host, port):
         None
     """
     exit_signal_event = Event()
-
+    selective_repeat = True
     # server_socket = RdtSWSocketClient()
     # server_socket.bind((host, port))
     # TODO CHECK IF SOCKET SW O SR
@@ -126,21 +126,22 @@ def main(host, port):
 
     # Main loop
     while True:
-        try:
+        # try:
 
             if selective_repeat: 
                 data, addr = sock.recvfrom(HARDCODED_BUFFER_SIZE)   
             else:          
                 data, addr = sock._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
 
+            # print(f"Received data from client as {data} and address: {addr}")
             # If it is a new client
             if addr not in channels:
                 # Creates the channel for the new client
                 client_channel = queue.Queue()
                 channels[addr] = client_channel
 
-                client_channel.put(data)
-                if selective_repeat():
+                if selective_repeat:
+                    client_channel.put(data)
                     protocol = SelectiveRepeatRDT(WINDOW_SIZE, client_channel,sock, addr)
                     # Sends data to the new client
                     
@@ -148,6 +149,7 @@ def main(host, port):
                         target=handlerSR, args=(client_channel, addr, exit_signal_event,protocol)
                     )
                 else:
+                    client_channel.put((data,addr))
                     new_client = Thread(
                             target=handlerSW, args=(client_channel, addr, exit_signal_event)
                         )
@@ -155,18 +157,21 @@ def main(host, port):
                 new_client.start()                
             else:
                 # Send to the respective thread
-                channels[addr].put(data)
+                if selective_repeat:
+                    channels[addr].put(data)
+                else:
+                    client_channel.put((data,addr))
                 # print(f" data del channel: {channels[addr].get()}")
 
-        except KeyboardInterrupt:
-            print("\nClosing server")
-            close_server(exit_signal_event, clients, sock)
-            break
+        # except KeyboardInterrupt:
+        #     print("\nClosing server")
+        #     close_server(exit_signal_event, clients, sock)
+        #     break
 
-        except Exception as e:
-            print(f"😨 An exception has occurred, please try again -> {e}😨")
-            close_server(exit_signal_event, clients, sock)
-            break
+        # except Exception as e:
+        #     print(f"😨 An exception has occurred, please try again -> {e}😨")
+        #     close_server(exit_signal_event, clients, sock)
+        #     break
 
 
 
