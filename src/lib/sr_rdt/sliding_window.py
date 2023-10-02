@@ -7,12 +7,13 @@ from lib.constants import HARDCODED_MAX_TIMEOUT_TRIES, HARDCODED_TIMEOUT
 
 # TODO: Agregar addres de destino
 class SlidingWindow:
-    def __init__(self, window_size, socket, addr):
+    def __init__(self, window_size, socket, addr,stop_event):
         self.window_size = window_size
         self.buffer = []        
         self.base_seq_num = 1
         self.socket = socket
         self.addr = addr
+        self.stop_event = stop_event
 
     def add_packet(self, packet):
         # Si hay espacio en la ventana
@@ -24,8 +25,6 @@ class SlidingWindow:
             self.buffer.append(packet)
             
             return True
-        with open("client_log.txt", "a") as f:
-            f.write(f"Cannot add Pkt:{packet.seq_num} window is full \n")
         
         return False
 
@@ -37,17 +36,17 @@ class SlidingWindow:
         return None
 
     def timeout(self, packet):
-        print(f"Timeout for packet {packet.seq_num}, data: {packet.get_data()}")
+        # print(f"Timeout for packet {packet.seq_num}, data: {packet.get_data()}")
         if self.base_seq_num <= packet.seq_num < self.base_seq_num + self.window_size:
             if packet.timeouts >= HARDCODED_MAX_TIMEOUT_TRIES:
+                print("SE PERDIERON 5")
+                self.stop_event.set()
                 
-                with open("client_log.txt", "a") as f:
-                    f.write(f"Pkt:{packet.seq_num} has timeouted {HARDCODED_MAX_TIMEOUT_TRIES} times\n")
-                # TODO bye conexión
-                pass
+                raise TimeoutError
+                
             else:
-                with open("client_log.txt", "a") as f:
-                    f.write(f"Pkt:{packet.seq_num} has timeouted. Resending..\n")
+                # # with open("client_log.txt", "a") as f:
+                # #     f.write(f"Pkt:{packet.seq_num} has timeouted. Resending..\n")
                 self.socket.sendto(packet.into_bytes(), self.addr)
                 packet.timer = threading.Timer(HARDCODED_MAX_TIMEOUT_TRIES, self.timeout, [packet])
                 packet.timer.start()

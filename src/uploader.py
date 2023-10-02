@@ -22,7 +22,7 @@ def poll_socket(sock: socket.socket, data_queue,event):
             sock.settimeout(None)
             break
         try:
-            data,_ = sock.recvfrom(1024)                
+            data,_ = sock.recvfrom(1028)                
             data_queue.put(data)
         except TimeoutError:
             continue
@@ -44,7 +44,7 @@ def main(name: str, path: str, addr: Tuple[str, int], verbose: bool):
     """
     selective_repeat = True
     # Creates the upload handler
-    fs_handler = FileSystemUploaderClient(HARCODED_BUFFER_SIZE_FOR_FILE)
+    fs_handler = FileSystemUploaderClient(HARDCODED_CHUNK_SIZE)
     # Get the file size
     file_size = fs_handler.get_file_size(path=path)
 

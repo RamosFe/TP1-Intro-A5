@@ -1,14 +1,13 @@
 from math import ceil
 import socket
 import threading
+from lib.constants import HARDCODED_CHUNK_SIZE
 from lib.sr_rdt.packet import Packet
 from lib.sr_rdt.receiver_window import ReceiverWindow
 from lib.sr_rdt.sliding_window import SlidingWindow
 
 from threading import Event
 from queue import *
-
-PACKET_SIZE = 512
 
 class SenderSR:
     _sender = None
@@ -19,7 +18,7 @@ class SenderSR:
     
 
     def __init__(self, window_size, response_queue, ack_queue, socket, addr,stop_event: Event):
-        self._window = SlidingWindow(window_size,socket, addr)
+        self._window = SlidingWindow(window_size,socket, addr, stop_event)
         self._response_queue =  response_queue
         self._stop_event = stop_event
         self._ack_queue = ack_queue
@@ -35,10 +34,10 @@ class SenderSR:
 
     def _make_packets(self, data) -> list:
         # crear una lista de paquetes a partir de los datos
-        n_packets = ceil(len(data) / PACKET_SIZE)
+        n_packets = ceil(len(data) / HARDCODED_CHUNK_SIZE)
         packets = []
         for i in range(1, n_packets + 1, 1):
-            chunk = data[(i-1) * PACKET_SIZE : i * PACKET_SIZE]
+            chunk = data[(i-1) * HARDCODED_CHUNK_SIZE : i * HARDCODED_CHUNK_SIZE]
             packet = Packet(self._seq_num , chunk)
             packets.append(packet)
             self._seq_num += 1
@@ -78,6 +77,8 @@ class SenderSR:
             while not self._window.add_packet(packet):
                 self.check_ack_queue()
                 
+            if packet.seq_num == 100:
+                continue
             socket.sendto(packet.into_bytes(),self._addr)
             self.check_ack_queue()
 

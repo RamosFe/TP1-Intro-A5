@@ -48,7 +48,7 @@ class FileSystemDownloaderClient:
         return os.path.exists(os.path.join(self._mount_path, filename))
 
     def download_file(
-        self, socketSW, socketSR,path: str, size: int, exit_signal: Event,first_data,addr
+        self, socketSW: RdtSWSocketClient, socketSR,path: str, size: int, exit_signal: Event,first_data,addr
 
     ):
         """
@@ -66,7 +66,6 @@ class FileSystemDownloaderClient:
         steps = math.ceil(size / self._chunk_size)
         with alive_bar(steps, bar="bubbles", title=f"↓ {path}") as bar:
             with open(os.path.join(self._mount_path, path), "wb") as file:
-
                 # TODO CHEQUEAR ESTE MERGE
                 initial = True
                 try:
@@ -77,7 +76,7 @@ class FileSystemDownloaderClient:
                                 data = socketSW.recv(HARDCODED_BUFFER_SIZE,first_data,addr)
                                 initial = False
                             else:
-                                data = socketSR.receive_message() 
+                                data = socketSR.receive_message()
                         else:
                             print("receiving second data")
                             if socketSW is not None:

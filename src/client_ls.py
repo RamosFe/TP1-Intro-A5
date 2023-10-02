@@ -14,12 +14,10 @@ def main(addr : tuple[str, int]):
     client_socket = RdtSWSocketClient()
     # handshake = ThreeWayHandShake(client_socket)
     command = Command(MessageOption.LIST_FILES, None, 0)
-    print("Sending request to server to list files")
-    client_socket.send_with_internal_socket(command.to_str().encode(), addr)
-
     while True:
+        print("Sending command")
+        client_socket.send_with_internal_socket(command.to_str().encode(), addr)
         response = client_socket.recv(HARDCODED_BUFFER_SIZE)
-        print("response",response)
         if response is None:
             continue
         if LIST_FILES_FINISH in response.decode():

@@ -4,7 +4,7 @@ import os
 from threading import Event
 
 from lib.commands import Command, CommandResponse, MessageOption
-from lib.constants import HARCODED_BUFFER_SIZE_FOR_FILE, UPLOAD_FINISH_MSG
+from lib.constants import HARCODED_BUFFER_SIZE_FOR_FILE, UPLOAD_FINISH_MSG, HARDCODED_CHUNK_SIZE
 from lib.fs.fs_uploader import FileSystemUploaderServer
 
 from lib.handshake import ThreeWayHandShake
@@ -50,7 +50,7 @@ def upload_file(
         # socket_to_client._internal_socket.sendto(response.encode(), addr)
         return
 
-    fs_handler = FileSystemUploaderServer(HARCODED_BUFFER_SIZE_FOR_FILE)
+    fs_handler = FileSystemUploaderServer(HARDCODED_CHUNK_SIZE)
 
     file_size = fs_handler.get_file_size(path)
     command = Command(MessageOption.UPLOAD, comm.name, file_size)
@@ -77,8 +77,15 @@ def upload_file(
         return
 
     print(f"✔ Request accepted sending file {comm.name} to {addr} ✔")
+    try:
 
-    fs_handler.upload_file(socketSW, socketSR, addr, path, comm.name, False, exit_signal,channel)
+        fs_handler.upload_file(socketSW, socketSR, addr, path, comm.name, False, exit_signal,channel)
+    except TimeoutError:
+        if socketSR is not None:
+            socketSR.close_connection()
+        print("❌ Connection Timeout Error ❌")
+        return
+
     if socketSW is not None:
         socketSW.sendto_with_queue(UPLOAD_FINISH_MSG.encode(), addr,channel)
     else:

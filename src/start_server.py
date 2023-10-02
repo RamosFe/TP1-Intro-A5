@@ -14,6 +14,7 @@ from lib.constants import (
     HARDCODED_BUFFER_SIZE,
     HARDCODED_TIMEOUT,
     HARDCODED_MOUNT_PATH,
+    HARDCODED_CHUNK_SIZE,
 )
 
 WINDOW_SIZE = 50
@@ -128,11 +129,10 @@ def main(host, port):
         # try:
 
             if selective_repeat: 
-                data, addr = sock.recvfrom(HARDCODED_BUFFER_SIZE)   
+                data, addr = sock.recvfrom(1028)   
             else:          
                 data, addr = sock._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
 
-            # print(f"Received data from client as {data} and address: {addr}")
             # If it is a new client
             if addr not in channels:
                 # Creates the channel for the new client
