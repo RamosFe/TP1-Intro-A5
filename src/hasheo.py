@@ -1,9 +1,10 @@
 import hashlib
 
-def calculate_file_hash(file_path, hash_algorithm='sha256'):
+
+def calculate_file_hash(file_path, hash_algorithm="sha256"):
     """Calculate the hash of a file."""
     hash_obj = hashlib.new(hash_algorithm)
-    with open(file_path, 'rb') as file:
+    with open(file_path, "rb") as file:
         while True:
             data = file.read(65536)  # Read the file in 64k chunks
             if not data:
@@ -11,9 +12,10 @@ def calculate_file_hash(file_path, hash_algorithm='sha256'):
             hash_obj.update(data)
     return hash_obj.hexdigest()
 
+
 # Example usage:
-file1 = 'server_files/deymo4.jpg'  # Replace with the path to your first file
-file2 = 'deymo12312.jpg'  # Replace with the path to your second file
+file1 = "server_files/deymo4.jpg"  # Replace with the path to your first file
+file2 = "deymo12312.jpg"  # Replace with the path to your second file
 
 # file1 = 'server_files/up_photo2.jpeg'  # Replace with the path to your first file
 # file2 = 'imagen.jpeg'  # Replace with the path to your second file

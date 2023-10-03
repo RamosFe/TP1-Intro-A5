@@ -10,6 +10,7 @@ class MessageOption(Enum):
         UPLOAD (str): Represents the "UPLOAD" option.
         DOWNLOAD (str): Represents the "DOWNLOAD" option.
     """
+
     UPLOAD = "UPLOAD"
     DOWNLOAD = "DOWNLOAD"
     LIST_FILES = "LIST_FILES"
@@ -32,10 +33,13 @@ class Command:
             Deserialize a string message into a Command object.
 
     Attributes:
-        option (MessageOption): The message option, either "UPLOAD" or "DOWNLOAD".
+        option (MessageOption): The message option,
+        either "UPLOAD" or "DOWNLOAD".
         name (str): The name of the file associated with the command.
-        size (Optional[int]): The size of the file (only used for "UPLOAD" commands).
+        size (Optional[int]): The size of the
+        file (only used for "UPLOAD" commands).
     """
+
     def __init__(self, option: MessageOption, name: str, size: Optional[int]):
         self.option = option
         self.name = name
@@ -44,8 +48,6 @@ class Command:
     def to_str(self) -> str:
         """Serialize the command object into a string."""
         return f"{self.option.value}:{self.name}:{self.size}"
-
-    
 
     def option(self) -> str:
         """Get the message option."""
@@ -83,6 +85,7 @@ class CommandResponse:
     Attributes:
         _msg (str): The response message.
     """
+
     def __init__(self, msg: str):
         self._msg = msg
 
@@ -95,7 +98,8 @@ class CommandResponse:
         return self._msg
 
     def size(self) -> int:
-        """Get the size associated with the response (only used for "UPLOAD" responses)."""
+        """Get the size associated with the
+        response (only used for "UPLOAD" responses)."""
         if self.is_error() or "UPLOAD" not in self._msg:
             return -1
         return int(self._msg.split(":")[2])

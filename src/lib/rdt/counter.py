@@ -19,7 +19,8 @@ class ModuleNCounter:
 
     def increment(self):
         """
-        Increment the counter value and wrap around if it reaches the modulo value.
+        Increment the counter value and wrap around if
+        it reaches the modulo value.
         """
         self._value = self.next()
 

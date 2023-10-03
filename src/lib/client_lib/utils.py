@@ -1,5 +1,3 @@
-
-
 import socket
 import threading
 from lib.constants import HARDCODED_BUFFER_SIZE_SR, HARDCODED_TIMEOUT
@@ -27,9 +25,9 @@ def verify_params(args, command: str):
     return True
 
 
-
-
-def poll_socket(sock: socket.socket, data_queue,event,stop_rdt_event: threading.Event):
+def poll_socket(
+    sock: socket.socket, data_queue, event, stop_rdt_event: threading.Event
+):
     """
     Polls a socket for incoming data and puts it in a queue.
 
@@ -37,7 +35,8 @@ def poll_socket(sock: socket.socket, data_queue,event,stop_rdt_event: threading.
         sock (socket.socket): The socket to poll.
         data_queue (Queue): A queue to store the received data.
         event (threading.Event): An event for synchronization.
-        stop_rdt_event (threading.Event): An event to signal stopping the process from another thread.
+        stop_rdt_event (threading.Event): An event to signal stopping 
+        the process from another thread.
 
     Returns:
         None
@@ -51,15 +50,15 @@ def poll_socket(sock: socket.socket, data_queue,event,stop_rdt_event: threading.
     # Continue polling until max_tries_exceeded or event is set
     while not time_out_errors.max_tries_exceeded():
 
-        #Check if event of sinchronization is set or stop_rdt_event is set
+        # Check if event of sinchronization is set or stop_rdt_event is set
         if event.is_set() or stop_rdt_event.is_set():
             sock.settimeout(None)
             break
-        try:        
+        try:
             # Receive data from the socket
-            data,_ = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR) 
+            data, _ = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR)
 
-            # Put received data into the queue for later process        
+            # Put received data into the queue for later process
             data_queue.put(data)
 
             # Reset the number of tries as data was received successfully
@@ -73,4 +72,3 @@ def poll_socket(sock: socket.socket, data_queue,event,stop_rdt_event: threading.
     if time_out_errors.max_tries_exceeded():
         stop_rdt_event.set()
         event.set()
-

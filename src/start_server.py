@@ -11,12 +11,9 @@ from lib.server_lib.uploader import upload_file
 from lib.commands import Command, MessageOption
 from lib.constants import (
     HARDCODED_BUFFER_SIZE_SR,
-    HARDCODED_HOST,
-    HARDCODED_PORT,
     HARDCODED_BUFFER_SIZE,
     HARDCODED_TIMEOUT_SW,
     HARDCODED_MOUNT_PATH,
-    HARDCODED_CHUNK_SIZE,
 )
 from lib.server_lib import parser as ps
 

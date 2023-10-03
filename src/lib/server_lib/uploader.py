@@ -1,14 +1,14 @@
 import queue
-import socket
 import os
 from threading import Event
 
 from lib.commands import Command, CommandResponse, MessageOption
-from lib.constants import HARCODED_BUFFER_SIZE_FOR_FILE, UPLOAD_FINISH_MSG, HARDCODED_CHUNK_SIZE
+from lib.constants import (
+    UPLOAD_FINISH_MSG,
+    HARDCODED_CHUNK_SIZE,
+)
 from lib.fs.fs_uploader import FileSystemUploaderServer
-
 from lib.handshake import ThreeWayHandShake
-from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 
 
 def upload_file(
@@ -36,7 +36,7 @@ def upload_file(
         If the file doesn't exist or is not valid, it sends an error response to the client.
         If the file exists and is valid, it sends an upload request to the client and proceeds with the upload.
     """
-# Construct the full path of the file to be uploaded
+    # Construct the full path of the file to be uploaded
     path = mount_path + comm.name
 
     # If using stop-and-wait (socketSW is not None), initialize a ThreeWayHandShake object
@@ -67,7 +67,11 @@ def upload_file(
     # If using stop-and-wait, send the command with ThreeWayHandShake
     if socketSW is not None:
         try:
-            command = CommandResponse(three_way_hand_shake.send_with_queue_upload(command.to_str(), addr, channel).decode())
+            command = CommandResponse(
+                three_way_hand_shake.send_with_queue_upload(
+                    command.to_str(), addr, channel
+                ).decode()
+            )
         except TimeoutError:
             print("❌ Request not answered ❌")
             return
@@ -86,7 +90,9 @@ def upload_file(
 
     try:
         # Start the upload process
-        fs_handler.upload_file(socketSW, socketSR, addr, path, comm.name, False, exit_signal, channel)
+        fs_handler.upload_file(
+            socketSW, socketSR, addr, path, comm.name, False, exit_signal, channel
+        )
     except TimeoutError:
         if socketSR is not None:
             socketSR.close_connection()
