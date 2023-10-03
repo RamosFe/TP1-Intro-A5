@@ -303,7 +303,6 @@ class SelectiveRepeatRDT:
             continue
 
         # Send signal to threads to terminate
-        print("Finished retrieving packets")
         self._stop_event.set()
         self._sender.close()
         self._receiver.close()
