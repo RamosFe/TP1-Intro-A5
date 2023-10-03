@@ -1,4 +1,5 @@
 import hashlib
+import sys
 
 
 def calculate_file_hash(file_path, hash_algorithm="sha256"):
@@ -13,17 +14,24 @@ def calculate_file_hash(file_path, hash_algorithm="sha256"):
     return hash_obj.hexdigest()
 
 
-# Example usage:
-file1 = "server_files/deymo4.jpg"  # Replace with the path to your first file
-file2 = "deymo12312.jpg"  # Replace with the path to your second file
+def main():
 
-# file1 = 'server_files/up_photo2.jpeg'  # Replace with the path to your first file
-# file2 = 'imagen.jpeg'  # Replace with the path to your second file
+    if len(sys.argv) != 3:
+        print("Usage: python script.py <server_file> <another_file>")
+        return
 
-hash1 = calculate_file_hash(file1)
-hash2 = calculate_file_hash(file2)
+    file1 = sys.argv[1]
+    file_1 = "lib/server_files/" + file1
+    file_2 = sys.argv[2]
+    hash1 = calculate_file_hash(file_1)
+    hash2 = calculate_file_hash(file_2)
+    print("Hash of file 1:", hash1)
+    print("Hash of file 2:", hash2)
+    if hash1 == hash2:
+        print("The files are the same.")
+    else:
+        print("The files are different.")
 
-if hash1 == hash2:
-    print("The files are the same.")
-else:
-    print("The files are different.")
+if __name__ == '__main__':
+    main()
+

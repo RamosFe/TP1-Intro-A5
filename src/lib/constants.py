@@ -38,7 +38,7 @@ UPLOAD_FINISH_MSG = "FINARDO"
 LIST_FILES_FINISH = "FINARDO"
 
 # Mount path for server files (directory where files are stored)
-HARDCODED_MOUNT_PATH = "./server_files/"
+HARDCODED_MOUNT_PATH = "./lib/server_files/"
 
 
 WINDOW_SIZE = 60
