@@ -4,17 +4,17 @@ HARDCODED_PORT = 6000
 
 
 # Timeout for certain operations in seconds
-HARDCODED_TIMEOUT = 1
+HARDCODED_TIMEOUT = 0.5
 
 # Maximum number of times to try a timeout operation
 
-HARDCODED_MAX_TIMEOUT_TRIES = 5
+HARDCODED_MAX_TIMEOUT_TRIES = 10
 
 # Timeout for receiving input from the user
 HARDCODED_TIMEOUT_FOR_RECEIVING_INPUT = 40
 
 # Chunk size for file transfer
-HARDCODED_CHUNK_SIZE = 4000
+HARDCODED_CHUNK_SIZE = 4096
 
 # Buffer size for file transfer
 HARCODED_BUFFER_SIZE_FOR_FILE = 8000
