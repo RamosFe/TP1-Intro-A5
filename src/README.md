@@ -50,13 +50,13 @@ Ejemplo de ejecución usando Selective Repeat:
 ```bash
 $ python3 -m uploader -r -v -H 127.0.0.1 -p 6000 -s $(p) -n $(n)
 ```
-_Puede correrse ese mismo comando de la forma `make upload_sr`_
+_Puede correrse ese mismo comando de la forma `make upload_sr p="archivo_a_subir" n="nombre_archivo_servidor"`_
 
 Ejemplo de ejecución usando Stop and Wait:
 ```bash
 $ python3 -m uploader -v -H 127.0.0.1 -p 6000 -s $(p) -n $(n)
 ```
-_Puede correrse ese mismo comando de la forma `make upload_sw`_
+_Puede correrse ese mismo comando de la forma `make upload_sw p="archivo_a_subir" n="nombre_archivo_servidor"`_
 
 ### Download
 
@@ -69,3 +69,26 @@ El cliente para modo _download_ acepta los siguientes flags:
 - `-q` para indicar que se desea que el cliente no imprima por pantalla los eventos que ocurren. (Por defecto)
 - `-r` para indicar que el protocolo de transferencia sea _Selective Repeat_, de lo contrario será _Stop and Wait_.
 
+Ejemplo de ejecución usando Selective Repeat:
+```bash
+$ python3 -m downloader -r -v -H 127.0.0.1 -p 6000 -d $(p) -n $(n)
+```
+_Puede correrse ese mismo comando de la forma `make download_sr`_
+
+Ejemplo de ejecución usando Stop and Wait:
+```bash
+$ python3 -m downloader -v -H 127.0.0.1 -p 6000 -d $(p) -n $(n)
+```
+_Puede correrse ese mismo comando de la forma `make download_sw`_
+
+### List
+
+El cliente para modo _list_ acepta los siguientes flags:
+- `-H` para indicar la IP del servidor al que se conectará.
+- `-p` para indicar el puerto del servidor al que se conectará.
+
+Ejemplo de ejecución:
+```bash
+$ python3 -m client_ls -H 127.0.0.1 -p 6000
+```
+_Puede correrse ese mismo comando de la forma `make ls`_

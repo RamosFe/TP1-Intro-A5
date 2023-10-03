@@ -7,7 +7,7 @@ import queue
 from lib.sr_rdt.selective_repeat import SelectiveRepeatRDT
 from lib.fs.fs_downloader_client import FileSystemDownloaderClient
 from lib.client_lib import parser, utils as parser_utils
-from lib.constants import HARDCODED_CHUNK_SIZE, HARDCODED_BUFFER_SIZE_SR, HARDCODED_TIMEOUT,WINDOW_SIZE
+from lib.constants import HARDCODED_CHUNK_SIZE, HARDCODED_BUFFER_SIZE_SR,WINDOW_SIZE
 from lib.commands import Command, CommandResponse, MessageOption
 from lib.handshake import ThreeWayHandShake
 

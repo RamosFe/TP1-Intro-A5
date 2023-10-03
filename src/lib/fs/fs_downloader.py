@@ -2,7 +2,7 @@ import os
 import queue
 from threading import Event
 from lib.rdt.rdt_sw_socket import RdtSWSocketClient
-from lib.constants import UPLOAD_FINISH_MSG, HARDCODED_TIMEOUT
+from lib.constants import UPLOAD_FINISH_MSG
 
 
 class FileSystemDownloaderServer:

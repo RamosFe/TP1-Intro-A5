@@ -24,7 +24,6 @@ def main(addr: tuple[str, int]):
     command = Command(MessageOption.LIST_FILES, None, 0)  # Create a command to list files
     
     while True:
-        print("Sending command")  # Print status message
         client_socket.send_with_internal_socket(command.to_str().encode(), addr)  # Send the command to the server
         
         response = client_socket.recv(HARDCODED_BUFFER_SIZE)  # Receive response from the server

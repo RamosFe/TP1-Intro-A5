@@ -2,7 +2,7 @@ import queue
 import socket
 import math
 import time
-from lib.constants import HARDCODED_BUFFER_SIZE,HARDCODED_CHUNK_SIZE,HARDCODED_HOST,HARDCODED_MOUNT_PATH,HARDCODED_PORT,HARDCODED_TIMEOUT, HARDCODED_MAX_TIMEOUT_TRIES
+from lib.constants import HARDCODED_BUFFER_SIZE,HARDCODED_CHUNK_SIZE,HARDCODED_HOST,HARDCODED_MOUNT_PATH,HARDCODED_PORT,HARDCODED_TIMEOUT_SW, HARDCODED_MAX_TIMEOUT_TRIES
 from lib.rdt.counter import ModuleNCounter
 class RdtSWSocket:
     """
@@ -120,7 +120,7 @@ class RdtSWSocketClient:
 
  
         # Seteo timeout del socket
-        self._internal_socket.settimeout(HARDCODED_TIMEOUT) 
+        self._internal_socket.settimeout(HARDCODED_TIMEOUT_SW) 
         
         # Por cada chunk
         try:
@@ -209,7 +209,7 @@ class RdtSWSocketClient:
         # Mientras no pase el numero de intentos para mandar el paquete definido por el HARDCODED_MAX_TIMEOUT_PACKET, labura
         while not time_out_errors.max_tries_exceeded():
             try:
-                receive, receive_addr = channel.get(block=True, timeout=HARDCODED_TIMEOUT)
+                receive, receive_addr = channel.get(block=True, timeout=HARDCODED_TIMEOUT_SW)
                 # Caso que el sequence number es distinto al esperado
                 ack_receive = AckSequenceNumer.from_bytes(receive)
                 if ack_receive.ack != self.counter.get_value():
@@ -329,11 +329,11 @@ class TimeOutErrors:
         return self.tries > HARDCODED_MAX_TIMEOUT_TRIES
     
     def get_timeout(self):
-        return HARDCODED_TIMEOUT
+        return HARDCODED_TIMEOUT_SW
 
     def time_to_receive_data(self):
         start_time = time.time()
-        end_time = start_time + HARDCODED_TIMEOUT
+        end_time = start_time + HARDCODED_TIMEOUT_SW
         return time.time() < end_time
 
 

@@ -14,7 +14,7 @@ from lib.constants import (
     HARDCODED_HOST,
     HARDCODED_PORT,
     HARDCODED_BUFFER_SIZE,
-    HARDCODED_TIMEOUT,
+    HARDCODED_TIMEOUT_SW,
     HARDCODED_MOUNT_PATH,
     HARDCODED_CHUNK_SIZE,
 )
@@ -81,7 +81,7 @@ def handlerSW(channel: queue.Queue, addr: tuple[str, int], storage_path, exit_si
         if verbose:
             print(f'Connection received from {addr[0]}:{addr[1]}')
 
-        data,addr = channel.get(block=True, timeout=HARDCODED_TIMEOUT)
+        data,addr = channel.get(block=True, timeout=HARDCODED_TIMEOUT_SW)
         data = data.decode()
         command = Command.from_str(data)
         print(f"Received command {command.option} from client at {addr}")

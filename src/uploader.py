@@ -10,9 +10,8 @@ from lib.commands import Command, MessageOption, CommandResponse
 from lib.fs.fs_uploader_client import FileSystemUploaderClient
 from lib.client_lib import utils as parser_utils
 from lib.client_lib import parser
-from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_BUFFER_SIZE_SR, HARDCODED_CHUNK_SIZE, HARDCODED_TIMEOUT, UPLOAD_FINISH_MSG, HARCODED_BUFFER_SIZE_FOR_FILE, WINDOW_SIZE
-from lib.rdt.rdt_sw_socket import RdtSWSocketClient, TimeOutErrors
-from lib.rdt.rdt_sw_socket import RdtSWSocket
+from lib.constants import  HARDCODED_CHUNK_SIZE, UPLOAD_FINISH_MSG, WINDOW_SIZE
+from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 from lib.handshake import ThreeWayHandShake
 
 

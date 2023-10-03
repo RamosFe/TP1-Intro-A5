@@ -4,7 +4,7 @@ from lib.commands import CommandResponse
 from lib.rdt.rdt_sw_socket import TimeOutErrors
 
 from lib.rdt.rdt_sw_socket import RdtSWSocketClient
-from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_MAX_TIMEOUT_TRIES, HARDCODED_TIMEOUT, HARDCODED_TIMEOUT_FOR_RECEIVING_INPUT
+from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_MAX_TIMEOUT_TRIES, HARDCODED_TIMEOUT_SW, HARDCODED_TIMEOUT_FOR_RECEIVING_INPUT
 
 class ThreeWayHandShake:
 
@@ -95,7 +95,7 @@ class ThreeWayHandShake:
             tuple: The response and address.
         """
         self.socket.send_with_internal_socket(data.encode(), addr)  # Send the command
-        self.socket.set_timeout(HARDCODED_TIMEOUT)
+        self.socket.set_timeout(HARDCODED_TIMEOUT_SW)
         while not self.time_out_errors.max_tries_exceeded():
             try:
                 response, addr = self.socket.recv_with_internal_socket(HARDCODED_BUFFER_SIZE)
@@ -130,7 +130,7 @@ class ThreeWayHandShake:
         Returns:
             None
         """
-        self.socket.set_timeout(HARDCODED_TIMEOUT)
+        self.socket.set_timeout(HARDCODED_TIMEOUT_SW)
 
         # Until there are no more tries left
         while not self.time_out_errors.max_tries_exceeded():
