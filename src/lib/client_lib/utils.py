@@ -30,26 +30,47 @@ def verify_params(args, command: str):
 
 
 def poll_socket(sock: socket.socket, data_queue,event,stop_rdt_event: threading.Event):
+    """
+    Polls a socket for incoming data and puts it in a queue.
 
+    Args:
+        sock (socket.socket): The socket to poll.
+        data_queue (Queue): A queue to store the received data.
+        event (threading.Event): An event for synchronization.
+        stop_rdt_event (threading.Event): An event to signal stopping the process from another thread.
+
+    Returns:
+        None
+    """
+    # Create an instance of TimeOutErrors
     time_out_errors = TimeOutErrors()
+
+    # Set socket timeout to a hardcoded value
     sock.settimeout(HARDCODED_TIMEOUT)
+
+    # Continue polling until max_tries_exceeded or event is set
     while not time_out_errors.max_tries_exceeded():
+
+        #Check if event of sinchronization is set or stop_rdt_event is set
         if event.is_set() or stop_rdt_event.is_set():
-            print("--DEBUG-- stoping poll socket")
             sock.settimeout(None)
             break
         try:        
-            # print("--DEBUG-- waiting for response")
-            data,_ = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR)  
-            # print("--DEBUG-- data received: ", data)              
+            # Receive data from the socket
+            data,_ = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR) 
+
+            # Put received data into the queue for later process        
             data_queue.put(data)
+
+            # Reset the number of tries as data was received successfully
             time_out_errors.reset_tries()
         except TimeoutError:
+            # Handle timeout error
             time_out_errors.increase_try()
             continue
-    
+
+    # If max_tries_exceeded, set events to signal stopping
     if time_out_errors.max_tries_exceeded():
-        print("setting event!!!")
         stop_rdt_event.set()
         event.set()
 

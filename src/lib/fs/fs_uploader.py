@@ -57,30 +57,41 @@ class FileSystemUploaderServer:
         Upload a file to a client socket.
 
         Args:
-            sender (socket.socket): The socket used to send data to the client.
+            socketSW: The object responsible for sending data to the client using stop-and-wait.
+            socketSR: The object responsible for sending data to the client using selective repeat.
             addr (tuple[str, int]): The address of the client.
             path (str): The path to the file to be uploaded.
             name (str): The name of the file being uploaded.
             verbose (bool): If True, print verbose information about the upload.
             exit_signal (threading.Event): An event signaling whether to exit the upload process.
+            channel (queue.Queue): A queue for receiving data chunks from clients in server.
 
         Note:
             The upload process continues until either the entire file is sent or an exit signal is set.
         """
+    # Open the file in binary mode for reading
         with open(path, "rb") as file:
+            # Print information about the file being uploaded if verbose is True
             if verbose:
                 print(f"-> Uploading file {name}")
 
+            # Iterate over the file in chunks of size _file_buffer_size
             for chunk in iter(lambda: file.read(self._file_buffer_size), b""):
+                # Check if an exit signal is set
                 if exit_signal.is_set():
                     if socketSW is not None:
-                        socketSW.sendto_with_queue(chunk, addr,channel)
+                        # Send the chunk using senderSW (stop-and-wait)
+                        socketSW.sendto_with_queue(chunk, addr, channel)
                     else:
+                        # Send the chunk using senderSR (selective repeat)
                         socketSR.send_message(chunk)
                     print("Closing server due to signal")
                     break
+                
                 if socketSW is not None:
-                    socketSW.sendto_with_queue(chunk, addr,channel)
+                    # Send the chunk using senderSW (stop-and-wait)
+                    socketSW.sendto_with_queue(chunk, addr, channel)
                 else:
+                    # Send the chunk using senderSR (selective repeat)
                     socketSR.send_message(chunk)
 

@@ -4,7 +4,7 @@ HARDCODED_PORT = 6000
 
 
 # Timeout for certain operations in seconds
-HARDCODED_TIMEOUT = 0.5
+HARDCODED_TIMEOUT = 0.8
 
 # Maximum number of times to try a timeout operation
 
@@ -38,5 +38,5 @@ LIST_FILES_FINISH = "FINARDO"
 HARDCODED_MOUNT_PATH = "./server_files/"
 
 
-WINDOW_SIZE = 60
+WINDOW_SIZE = 16
 

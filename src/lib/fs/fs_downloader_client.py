@@ -63,37 +63,55 @@ class FileSystemDownloaderClient:
         Note:
             The download process continues until either the socket is closed or an "UPLOAD_FINISH_MSG" is received in the data.
         """
+
+        # Calculate the number of progress steps based on chunk size and file size for the progress bar.
         steps = math.ceil(size / self._chunk_size)
+
+         # Initialize the progress bar
         with alive_bar(steps, bar="bubbles", title=f"↓ {path}") as bar:
+
+            # Open a file for writing the downloaded data
             with open(os.path.join(self._mount_path, path), "wb") as file:
-                # TODO CHEQUEAR ESTE MERGE
+
+                # Flag to indicate if this is the first data packet for handshake of Stop and Wait
                 initial = True
                 try:
+
+                    # Continue receiving data until the exit_signal is set or an "UPLOAD_FINISH_MSG" is received in the data.
                     while not exit_signal.isSet():
                         if initial :
-                            #print("first receive")
                             if socketSW is not None:
+                                # Receive data from socketSW
                                 data = socketSW.recv(HARDCODED_BUFFER_SIZE,first_data,addr)
                                 initial = False
                             else:
+
+                                # Receive data from socketSR 
                                 data = socketSR.receive_message()
                         else:
-                            print("receiving second data")
+
                             if socketSW is not None:
+                                # Receive data from socketSW
                                 data = socketSW.recv(HARDCODED_BUFFER_SIZE,None,None)
                             else:
+                                # Receive data from socketSR 
                                 data = socketSR.receive_message()
                         if data is None:
                             continue
+                        # Check if the received data contains an upload finish message
                         if UPLOAD_FINISH_MSG.encode() in data:
                             return # End of file
+                        
+                        # Update the progress bar
                         bar()
+
+                        # Write the received data to the file
                         file.write(data)
                 except queue.Empty as e:
                     if exit_signal.is_set():
-                        print(" --DEBUG--- Closing server due to signal")
                         return
                     else:
                         raise e
-
+                    
+            # Update progress bar text when download is complete
             bar.text("✔ Done ✔")

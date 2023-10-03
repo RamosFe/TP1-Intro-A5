@@ -57,10 +57,9 @@ def main(name: str, path: str,selective_repeat : bool, addr: Tuple[str, int], ve
             client_socket.send_message(command.to_str().encode())
             response = client_socket.receive_message().decode()
         else:
-                #Creates ThreeWayHandShake
+            #Creates ThreeWayHandShake
             three_way_handshake = ThreeWayHandShake(client_socket)
             response = three_way_handshake.send(command.to_str(),addr).decode()
-                # Log the command if verbose
     except TimeoutError:
         print("❌ Error: server did not respond to upload request ❌")
         return

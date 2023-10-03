@@ -2,7 +2,6 @@ import os
 import math
 from alive_progress import alive_bar
 from lib.rdt.rdt_sw_socket import RdtSWSocketClient
-from lib.rdt.socket_interface import SocketInterface
 from lib.sr_rdt.selective_repeat import SelectiveRepeatRDT
 
 
@@ -55,22 +54,32 @@ class FileSystemUploaderClient:
             The upload process continues until the entire file is sent.
         """
         
+    # Open the file in binary mode for reading
         with open(path, "rb") as file:
+            # Calculate the number of progress steps based on chunk size and file size
             steps = math.ceil(self.get_file_size(path) / self._chunk_size)
+
+            # Print information about the file being uploaded if verbose is True
             if verbose:
                 print(f"-> Uploading file {name}")
 
+            # Initialize a progress bar
             with alive_bar(steps, bar="bubbles", title=f"↑ {name}") as bar:
-                #TODO VER ESTE merge
+                # Iterate over the file in chunks of size _chunk_size
                 for chunk in iter(lambda: file.read(self._chunk_size), b""):
                     try:
                         if senderSW is not None:
+                            # Send the chunk using senderSW (stop-and-wait)
                             senderSW.sendto(chunk, addr)
                         else:
+                            # Send the chunk using senderSR (selective repeat)
                             senderSR.send_message(chunk)
 
                     except TimeoutError:
                         raise TimeoutError
+                    
+                    # Update the progress bar
                     bar()
 
+            # Display a completion message when the upload is finished
             bar.text("✔ Done ✔")

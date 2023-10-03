@@ -38,11 +38,14 @@ def download_file(
         If the file does not exist, it sends an OK response and proceeds with the download.
     """
 
+    # Print information about the request if verbose is enabled
     if verbose:
-            print(f'[{addr[0]}:{addr[1]}] Requested upload of {comm.name}')
+        print(f'[{addr[0]}:{addr[1]}] Requested upload of {comm.name}')
 
+    # Initialize a file system handler for downloading
     fs_handler = FileSystemDownloaderServer(mount_path, HARDCODED_CHUNK_SIZE)
-#TODO CHEQUEAR ESTE MERGE
+
+    # If using stop-and-wait (socketSW is not None)
     if socketSW is not None:
         three_way_handshake = ThreeWayHandShake(socketSW)
         try:
@@ -52,26 +55,27 @@ def download_file(
                 response = CommandResponse.err_response(
                     f"ERR file {comm.name} already exists"
                 ).to_str()
-                three_way_handshake.send_with_queue(response, addr,channel)
+                # Send an error response
+                three_way_handshake.send_with_queue(response, addr, channel)
             else:
+                # Send an OK response and start the download
                 response = CommandResponse.ok_response().to_str()
-                three_way_handshake.send_with_queue(response, addr,channel)
-                fs_handler.download_file(channel,socketSW,None, comm.name, exit_signal)
+                three_way_handshake.send_with_queue(response, addr, channel)
+                fs_handler.download_file(channel, socketSW, None, comm.name, exit_signal)
         except TimeoutError:
-            print(" --FEBUG-- Yo soy el timeout y ordeno que Tomi y Cami Ayala salgan a tomar una birra")
             return
     else:
-        print("Into download file")
-        fs_handler = FileSystemDownloaderServer(mount_path, HARDCODED_CHUNK_SIZE)
+        # If using selective repeat (socketSR)
         if fs_handler.file_exists(filename=comm.name):
-            print("entra al if")
             response = CommandResponse.err_response(
                 f"ERR file {comm.name} already exists"
             ).to_str()
+            # Send an error response
             socketSR.send_message(response.encode())
         else:
+            # Send an OK response and start the download
             response = CommandResponse.ok_response().to_str()
-            print("entra al else")
             socketSR.send_message(response.encode())
-            fs_handler.download_file(channel,socketSW,socketSR, comm.name, exit_signal)
+            fs_handler.download_file(channel, socketSW, socketSR, comm.name, exit_signal)
+            # Close the connection after download completion
             socketSR.close_connection()

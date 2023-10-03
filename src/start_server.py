@@ -23,7 +23,6 @@ from lib.server_lib import parser as ps
 WINDOW_SIZE = 50
 
 from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient
-from lib.rdt.socket_interface import SocketInterface
 
 
 def handlerSR(channel: queue.Queue, addr, storage_path, exit_signal: Event, protocol, verbose):
@@ -139,7 +138,7 @@ def main():
     if selective_repeat:
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     else:
-        sock = RdtSWSocketClient()   # server_socket
+        sock = RdtSWSocketClient()
     sock.bind((args.host, args.port))
 
     # State variables
@@ -182,7 +181,6 @@ def main():
                     channels[addr].put(data)
                 else:
                     client_channel.put((data,addr))
-                # print(f" data del channel: {channels[addr].get()}")
 
         except KeyboardInterrupt:
             print("\nServer stopped by the user, exiting...")
@@ -191,7 +189,7 @@ def main():
             break
 
         except Exception as e:
-            print(f"😨 An exception has occurred, please try again 😨") # Borré el {e} para que no explote en la cara del user
+            print(f"😨 An exception has occurred, please try again 😨")
             try:
 
                 close_server(exit_signal_event, clients, sock)

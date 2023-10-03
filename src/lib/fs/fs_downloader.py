@@ -60,23 +60,29 @@ class FileSystemDownloaderServer:
             The download process continues until either the queue is empty and the exit_signal is not set
             or an "UPLOAD_FINISH_MSG" is received in the data.
 |   """ 
+        # Open a file for writing the downloaded data
         with open(os.path.join(self._mount_path, path), "wb") as file:
             try:
                 while not exit_signal.is_set():
-                    #TODO CHEQUEAR ESTE MERGE
                     if socketSW is not None:
+                        # Receive data from socketSW 
                         data = socketSW.recv_with_queue(channel)
                     else:
+                        # Receive data from socketSR
                         data = socketSR.receive_message()
+                    
+                    #Dont do anything when there's no data
                     if data is None:
                         continue
+
+                    # Check if the received data contains an upload finish message
                     if UPLOAD_FINISH_MSG.encode() in data:
                         return
+                    
+                    # Write the received data to the file
                     file.write(data)
-                print("Closing download")
             except queue.Empty as e:
                 if exit_signal.is_set():
-                    print(" --DEBUG--- Closing server due to signal")
                     return
                 else:
                     raise e

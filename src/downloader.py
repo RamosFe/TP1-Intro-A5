@@ -12,7 +12,6 @@ from lib.commands import Command, CommandResponse, MessageOption
 from lib.handshake import ThreeWayHandShake
 
 from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient, TimeOutErrors
-from lib.rdt.socket_interface import SocketInterface
 
 
 def main():
@@ -50,14 +49,12 @@ def main():
                 print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
                 download_file(None, protocol, args.dst, args.name, args.verbose, args.host, args.port,event)
                 protocol.close_connection()
-                # th.jo
             else:
                 client_socket = RdtSWSocketClient()
                 print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
                 download_file(client_socket,None, args.dst, args.name, args.verbose, args.host, args.port,None)
                 client_socket.close()
         except TimeoutError:
-            print("NO LLEGA????")
             close_connections(client_socket,protocol,event)
             print("❌ Connection Timeout Error ❌")
             return
