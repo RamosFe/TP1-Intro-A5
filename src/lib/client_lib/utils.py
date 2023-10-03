@@ -49,6 +49,7 @@ def poll_socket(sock: socket.socket, data_queue,event,stop_rdt_event: threading.
             continue
     
     if time_out_errors.max_tries_exceeded():
+        print("setting event!!!")
         stop_rdt_event.set()
         event.set()
 

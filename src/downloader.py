@@ -91,16 +91,16 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
         return
 
     command = Command(MessageOption.DOWNLOAD, name, 0)
-    if socketSW is not None:
-        three_way_handshake = ThreeWayHandShake(socketSW)
-        try:
+    try: 
+        if socketSW is not None:
+            three_way_handshake = ThreeWayHandShake(socketSW)
             response = three_way_handshake.send_download(command.to_str(),(host,port),True).decode()
-        except TimeoutError:
-            print("❌ Request not answered ❌")
-            return
-    else:
-        socketSR.send_message(command.to_str().encode())
-        response = socketSR.receive_message().decode()
+        else:
+            socketSR.send_message(command.to_str().encode())
+            response = socketSR.receive_message().decode()
+    except TimeoutError:
+        print("❌ Request not answered ❌")
+        return
 
     if verbose:
         print(f"-> Sending request to server to download file {name}")
@@ -140,11 +140,15 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
     if verbose:
         print(f"-> Downloading file {name} with name {dest}")
 
+    try:
 
-    if socketSW is not None:
-        fs_handler.download_file(socketSW,socketSR, dest, size, Event(),first_data,addr)
-    else:
-        fs_handler.download_file(socketSW,socketSR, dest, size, Event(), None, None)
+        if socketSW is not None:
+            fs_handler.download_file(socketSW,socketSR, dest, size, Event(),first_data,addr)
+        else:
+            fs_handler.download_file(socketSW,socketSR, dest, size, Event(), None, None)
+    except TimeoutError:
+        print("❌ Connection lost due to multiple tries ❌")
+        return
 
 
     if verbose:

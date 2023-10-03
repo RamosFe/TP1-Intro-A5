@@ -29,7 +29,6 @@ class ReceiverWindow:
             packets.append(packet)
             del self.window[self.base_seq]
             self.base_seq += 1
-        print(f"returned len packets: {len(packets)}")
         return packets
 
 

@@ -174,14 +174,22 @@ class SelectiveRepeatRDT:
     def receive_message(self) -> bytes:
         message = b''
         # Deberia darnos una lista hasta que llegue el EOP
-        packets = self.get_packets()         
+        packets = self.get_packets()   
         for packet in packets:               
             message += packet.get_data()
         return message
     
     def get_packets(self) -> list:
+        packet = None
         packets = []
-        packet = self._msg_queue.get()
+        while not self._stop_event.is_set() and packet is None:
+            try:
+                packet = self._msg_queue.get(timeout = 0.05)
+            except Empty:
+                continue
+        if self._stop_event.is_set() or not packet:
+            raise TimeoutError
+        
         while not packet.data == b'EOP':
             packets.append(packet)
             packet = self._msg_queue.get() 

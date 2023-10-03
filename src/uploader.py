@@ -52,20 +52,18 @@ def main(name: str, path: str,selective_repeat : bool, addr: Tuple[str, int], ve
     if verbose:
         print(f"-> Sending request to server to upload file {name} with size {file_size} bytes")
     
-    if selective_repeat:
-        client_socket.send_message(command.to_str().encode())
-        response = client_socket.receive_message().decode()
-    else:
-        try:
-            #Creates ThreeWayHandShake
+    try:
+        if selective_repeat:
+            client_socket.send_message(command.to_str().encode())
+            response = client_socket.receive_message().decode()
+        else:
+                #Creates ThreeWayHandShake
             three_way_handshake = ThreeWayHandShake(client_socket)
-
             response = three_way_handshake.send(command.to_str(),addr).decode()
-            # Log the command if verbose
-
-        except TimeoutError:
-            print("❌ Error: server did not respond to upload request ❌")
-            return
+                # Log the command if verbose
+    except TimeoutError:
+        print("❌ Error: server did not respond to upload request ❌")
+        return
         
     response_command = CommandResponse(response)
     # If error, return
