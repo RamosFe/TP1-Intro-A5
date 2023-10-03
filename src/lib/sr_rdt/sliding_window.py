@@ -39,7 +39,7 @@ class SlidingWindow:
         # print(f"Timeout for packet {packet.seq_num}, data: {packet.get_data()}")
         if self.base_seq_num <= packet.seq_num < self.base_seq_num + self.window_size:
             if packet.timeouts >= HARDCODED_MAX_TIMEOUT_TRIES:
-                print("SE PERDIERON 5")
+                # print("SE PERDIERON 5")
                 self.stop_event.set()
             else:
                 # # with open("client_log.txt", "a") as f:
@@ -81,6 +81,12 @@ class SlidingWindow:
                     
     def is_empty(self):
         return len(self.buffer) == 0
+
+    def close(self):
+        for packet in self.buffer:
+            if packet.timer != None:
+                packet.timer.cancel()
+                packet.timer = None
 
 
     def len_buf(self):

@@ -15,6 +15,8 @@ class SenderSR:
     _response_queue = None
     _seq_num = None
     _ack_queue = None
+    _stop_event = None
+    _socket = None
     
 
     def __init__(self, window_size, response_queue, ack_queue, socket, addr,stop_event: Event):
@@ -74,8 +76,11 @@ class SenderSR:
                 continue
            
             #If the sliding window is full, keep checking for ack of packets
-            while not self._window.add_packet(packet):
+            while not self._window.add_packet(packet) and not self._stop_event.is_set():
                 self.check_ack_queue()
+            
+            if self._stop_event.is_set():
+                break
                 
             if packet.seq_num == 100:
                 continue
@@ -86,7 +91,11 @@ class SenderSR:
         #print(f"slice window : {self._window.is_empty()} and _response {self._response_queue.empty()}")
         # print(f"{self._window.len_buf()}")
         # print(f"{self._window.return_buf()}")
-        return not self._window.is_empty() or not self._response_queue.empty()
+        return not self._window.is_empty() or not self._response_queue.empty() 
+    
+    def close(self):
+        self._window.close()
+        self._sender.join()
 
 
 class ReceiverSR:
@@ -95,10 +104,11 @@ class ReceiverSR:
     _data_queue = None
     _ack_queue = None
     _msg_queue = None
+    _stop_event = None
 
     def __init__(self, window_size, data_queue, ack_queue, sock, msg_queue, addr, stop_event):
         self._window = ReceiverWindow(window_size)
-        self.stop_event = stop_event
+        self._stop_event = stop_event
         self._ack_queue = ack_queue
         self._data_queue = data_queue
         self._msg_queue = msg_queue        
@@ -107,7 +117,7 @@ class ReceiverSR:
 
     def _receive_packets(self, socket, addr):
                 
-        while not self.stop_event.is_set():            
+        while not self._stop_event.is_set():            
             try:
                 packet = self._data_queue.get_nowait()
                 if packet is None:
@@ -139,6 +149,10 @@ class ReceiverSR:
             packets = self._window.get_ordered_packets()
             for pkt in packets:               
                 self._msg_queue.put(pkt)
+        
+    def close(self):
+        self._receiver.join()
+        
                                                              
 
 class SelectiveRepeatRDT:
@@ -162,8 +176,11 @@ class SelectiveRepeatRDT:
     def send_message(self, data):
         # Primero armamos los paquetes a partir de la data.
         
-        while self._response_queue.qsize() > 8:
-            continue  # TODO SACAR SI NO ENTRA
+        while self._response_queue.qsize() > 8 and not self._stop_event.is_set():
+            continue  
+
+        if self._stop_event.is_set():
+            raise TimeoutError
 
         packets = self._sender._make_packets(data)
         for packet in packets:
@@ -199,13 +216,16 @@ class SelectiveRepeatRDT:
     
     def close_connection(self): 
         print("Cerrando conexión...")
-        while self.packets_pending():
+        while self.packets_pending() and not self._stop_event.is_set():
             # print("Esperando a que se /envíen todos los paquetes...")
             continue
         
         # Mando señal a los threads para que terminen
         print("se terminaron de agarrar los paquetes")
         self._stop_event.set()
+        self._sender.close()
+        self._receiver.close()
+        print("Se cerró la conexión completamente")
 
 
         # if self._socket is not None:
