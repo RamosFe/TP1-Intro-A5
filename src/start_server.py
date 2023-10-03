@@ -55,7 +55,6 @@ def handlerSR(channel: queue.Queue, addr, storage_path, exit_signal: Event, prot
                 storage_path,
                 exit_signal,
                 command,
-                verbose
             )
 
 
@@ -108,7 +107,6 @@ def handlerSW(channel: queue.Queue, addr: tuple[str, int], storage_path, exit_si
                 storage_path,
                 exit_signal,
                 command,
-                verbose
             )
             case MessageOption.LIST_FILES:
                 return list_files_server(channel,socket_to_client,addr,HARDCODED_MOUNT_PATH,exit_signal)

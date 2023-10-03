@@ -12,8 +12,8 @@ def calculate_file_hash(file_path, hash_algorithm='sha256'):
     return hash_obj.hexdigest()
 
 # Example usage:
-file1 = 'server_files/foto3.jpg'  # Replace with the path to your first file
-file2 = 'foto.jpg'  # Replace with the path to your second file
+file1 = 'server_files/usa.jpeg'  # Replace with the path to your first file
+file2 = 'foto7.jpeg'  # Replace with the path to your second file
 
 # file1 = 'server_files/up_photo2.jpeg'  # Replace with the path to your first file
 # file2 = 'imagen.jpeg'  # Replace with the path to your second file

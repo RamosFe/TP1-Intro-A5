@@ -158,7 +158,7 @@ class RdtSWSocketClient:
         while not time_out_errors.max_tries_exceeded():
             try:
                 receive, receive_addr = self._internal_socket.recvfrom(HARDCODED_BUFFER_SIZE)
-                
+
                 # Caso que el sequence number es distinto al esperado
                 ack_receive = AckSequenceNumer.from_bytes(receive)
                 if ack_receive.ack != self.counter.get_value():
@@ -343,7 +343,8 @@ class TimeOutErrors:
     def increase_try(self):
         self.tries +=1
 
-
+    def reset_tries(self):
+        self.tries = 0
 
     def get_tries(self):
         return self.tries

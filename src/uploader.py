@@ -11,21 +11,29 @@ from lib.fs.fs_uploader_client import FileSystemUploaderClient
 from lib.client_lib import utils as parser_utils
 from lib.client_lib import parser
 from lib.constants import HARDCODED_BUFFER_SIZE, HARDCODED_BUFFER_SIZE_SR, HARDCODED_CHUNK_SIZE, HARDCODED_TIMEOUT, UPLOAD_FINISH_MSG, HARCODED_BUFFER_SIZE_FOR_FILE, WINDOW_SIZE
-from lib.rdt.rdt_sw_socket import RdtSWSocketClient
+from lib.rdt.rdt_sw_socket import RdtSWSocketClient, TimeOutErrors
 from lib.rdt.rdt_sw_socket import RdtSWSocket
 from lib.handshake import ThreeWayHandShake
 
 def poll_socket(sock: socket.socket, data_queue,event):
+
+    time_out_errors = TimeOutErrors()
     sock.settimeout(HARDCODED_TIMEOUT)
-    while True:
+    while not time_out_errors.max_tries_exceeded():
         if event.is_set():
             sock.settimeout(None)
             break
-        try:
+        try:        
             data,_ = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR)                
             data_queue.put(data)
+            time_out_errors.reset_tries()
         except TimeoutError:
+            time_out_errors.increase_try()
             continue
+    print("❌ Connection lost due to multiple tries ❌!!!!")
+    if time_out_errors.max_tries_exceeded():
+        raise TimeoutError
+
 
 
 

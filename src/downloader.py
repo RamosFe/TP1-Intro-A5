@@ -25,6 +25,7 @@ def poll_socket(sock: socket.socket, data_queue, event):
         try:        
             data,_ = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR)                
             data_queue.put(data)
+            time_out_errors.reset_tries()
         except TimeoutError:
             time_out_errors.increase_try()
             continue
