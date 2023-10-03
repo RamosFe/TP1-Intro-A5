@@ -15,26 +15,6 @@ from lib.rdt.rdt_sw_socket import RdtSWSocketClient, TimeOutErrors
 from lib.rdt.rdt_sw_socket import RdtSWSocket
 from lib.handshake import ThreeWayHandShake
 
-def poll_socket(sock: socket.socket, data_queue,event):
-
-    time_out_errors = TimeOutErrors()
-    sock.settimeout(HARDCODED_TIMEOUT)
-    while not time_out_errors.max_tries_exceeded():
-        if event.is_set():
-            sock.settimeout(None)
-            break
-        try:        
-            data,_ = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR)                
-            data_queue.put(data)
-            time_out_errors.reset_tries()
-        except TimeoutError:
-            time_out_errors.increase_try()
-            continue
-    print("❌ Connection lost due to multiple tries ❌!!!!")
-    if time_out_errors.max_tries_exceeded():
-        raise TimeoutError
-
-
 
 
 def main(name: str, path: str,selective_repeat : bool, addr: Tuple[str, int], verbose: bool):
@@ -62,7 +42,7 @@ def main(name: str, path: str,selective_repeat : bool, addr: Tuple[str, int], ve
         
         data_queue = queue.Queue()  
         client_socket = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, server_addr)
-        threading.Thread(target=poll_socket, args=(sock, data_queue,stop_event)).start()
+        threading.Thread(target=parser_utils.poll_socket, args=(sock, data_queue,stop_event,client_socket.get_event())).start()
         # Creates the client socket
     else:
         client_socket = RdtSWSocketClient()

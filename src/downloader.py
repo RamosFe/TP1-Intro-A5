@@ -15,26 +15,6 @@ from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient, TimeOutErrors
 from lib.rdt.socket_interface import SocketInterface
 
 
-def poll_socket(sock: socket.socket, data_queue, event):
-    time_out_errors = TimeOutErrors()
-    sock.settimeout(HARDCODED_TIMEOUT)
-    while not time_out_errors.max_tries_exceeded():
-        if event.is_set():
-            sock.settimeout(None)
-            break
-        try:        
-            data,_ = sock.recvfrom(HARDCODED_BUFFER_SIZE_SR)                
-            data_queue.put(data)
-            time_out_errors.reset_tries()
-        except TimeoutError:
-            time_out_errors.increase_try()
-            continue
-    print("❌ Connection lost due to multiple tries ❌!!!!")
-    if time_out_errors.max_tries_exceeded():
-        raise TimeoutError
-    
-    # print(f" el evento termino : {event.is_set()}")
-
 def main():
     """
     Entry point of the download client application.
@@ -65,7 +45,7 @@ def main():
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 data_queue = queue.Queue()  
                 protocol = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, server_addr)
-                threading.Thread(target=poll_socket, args=(sock, data_queue,event)).start()
+                threading.Thread(target=parser_utils.poll_socket, args=(sock, data_queue,event,protocol.get_event())).start()
                 
                 print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
                 download_file(None, protocol, args.dst, args.name, args.verbose, args.host, args.port,event)

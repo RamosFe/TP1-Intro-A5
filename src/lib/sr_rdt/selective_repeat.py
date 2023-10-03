@@ -206,3 +206,6 @@ class SelectiveRepeatRDT:
 
     def packets_pending(self) -> bool:
         return self._sender.packets_pending()            
+
+    def get_event(self) -> Event:
+        return self._stop_event

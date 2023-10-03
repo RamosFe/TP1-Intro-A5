@@ -8,7 +8,7 @@ HARDCODED_TIMEOUT = 1
 
 # Maximum number of times to try a timeout operation
 
-HARDCODED_MAX_TIMEOUT_TRIES = 5
+HARDCODED_MAX_TIMEOUT_TRIES = 10
 
 # Timeout for receiving input from the user
 HARDCODED_TIMEOUT_FOR_RECEIVING_INPUT = 40

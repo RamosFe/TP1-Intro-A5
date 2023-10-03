@@ -41,14 +41,11 @@ class SlidingWindow:
             if packet.timeouts >= HARDCODED_MAX_TIMEOUT_TRIES:
                 print("SE PERDIERON 5")
                 self.stop_event.set()
-                
-                raise TimeoutError
-                
             else:
                 # # with open("client_log.txt", "a") as f:
                 # #     f.write(f"Pkt:{packet.seq_num} has timeouted. Resending..\n")
                 self.socket.sendto(packet.into_bytes(), self.addr)
-                packet.timer = threading.Timer(HARDCODED_MAX_TIMEOUT_TRIES, self.timeout, [packet])
+                packet.timer = threading.Timer(HARDCODED_TIMEOUT, self.timeout, [packet])
                 packet.timer.start()
                 packet.timeouts += 1
 
@@ -61,9 +58,11 @@ class SlidingWindow:
             # Si no existe el paquete devuelvo
             if not packet:
                 return
-
+            
             # Si existe cancelo timeout 
-            packet.timer.cancel()
+            if packet.timer != None:
+                packet.timer.cancel()
+            
             packet.timer = None
 
             # Si es la base de la ventana, muevo la ventana
