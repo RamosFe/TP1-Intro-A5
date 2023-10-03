@@ -9,6 +9,12 @@ TP 1 de Introducción a Sistemas Distribuidos - Grupo A5
 - [108193 - Tomás González](https://github.com/tomasgonzz)
 - [101640 - Ramos Federico](https://github.com/RamosFe)
 
+# Dependencias
+Antes de ejecutar el programa, es necesario contar con la biblioteca que habilita la visualización de la barra de progreso.
+```bash
+$ pip install alive_progress
+```
+
 # Ejecución del programa
 
 ## Servidor
