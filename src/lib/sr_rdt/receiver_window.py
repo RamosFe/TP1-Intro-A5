@@ -1,6 +1,9 @@
 from collections import *
+
+
 class ReceiverWindow:
-    # Class-level variables to keep track of window, base sequence number, window size, and received packets
+    # Class-level variables to keep track of window, base sequence number, 
+    # window size, and received packets
     window = None
     base_seq = None
     window_size = None
@@ -18,7 +21,7 @@ class ReceiverWindow:
         self.window_size = window_size  # Set the window size
         self.base_seq = 1  # Initialize base sequence number to 1
 
-    def add_packet(self, packet) -> bool :    
+    def add_packet(self, packet) -> bool:
         """
         Add a packet to the receiver window.
 
@@ -31,11 +34,11 @@ class ReceiverWindow:
         # Check if the packet's sequence number is within the window range
         if self.window_size + self.base_seq < packet.seq_num:
             return False
-        
+
         # Add the packet to the window
         self.window[packet.seq_num] = packet
         return True
-    
+
     def get_ordered_packets(self) -> list:
         """
         Get a list of packets in order of their sequence numbers.

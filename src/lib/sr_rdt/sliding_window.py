@@ -37,9 +37,9 @@ class SlidingWindow:
             packet.timer.start()
             # Add the packet to the buffer
             self.buffer.append(packet)
-            
+
             return True
-        
+
         return False
 
     def get_packet(self, seq_num):
@@ -69,7 +69,9 @@ class SlidingWindow:
                 self.stop_event.set()
             else:
                 self.socket.sendto(packet.into_bytes(), self.addr)
-                packet.timer = threading.Timer(HARDCODED_TIMEOUT, self.timeout, [packet])
+                packet.timer = threading.Timer(
+                    HARDCODED_TIMEOUT, self.timeout, [packet]
+                )
                 packet.timer.start()
                 packet.timeouts += 1
 
@@ -87,18 +89,18 @@ class SlidingWindow:
             # If the packet does not exist, return
             if not packet:
                 return
-            
+
             # If the packet has a timer, cancel it
             if packet.timer != None:
                 packet.timer.cancel()
-            
+
             packet.timer = None
 
             # If it's the base of the window, move the window
-            if ack_num == self.base_seq_num:                        
+            if ack_num == self.base_seq_num:
                 self.buffer.pop(0)
                 self.base_seq_num += 1
-                while len(self.buffer) > 0:                     
+                while len(self.buffer) > 0:
                     next_packet = self.buffer[0]
                     # If not received yet (has a timer), stop
                     if not next_packet or next_packet.timer is not None:
@@ -106,7 +108,7 @@ class SlidingWindow:
                     # Otherwise, remove it from the buffer and continue with the next
                     self.buffer.pop(0)
                     self.base_seq_num += 1
-                    
+
     def is_empty(self):
         """
         Check if the buffer is empty.

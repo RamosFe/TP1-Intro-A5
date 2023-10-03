@@ -7,11 +7,10 @@ import queue
 from lib.sr_rdt.selective_repeat import SelectiveRepeatRDT
 from lib.fs.fs_downloader_client import FileSystemDownloaderClient
 from lib.client_lib import parser, utils as parser_utils
-from lib.constants import HARDCODED_CHUNK_SIZE, HARDCODED_BUFFER_SIZE_SR,WINDOW_SIZE
+from lib.constants import HARDCODED_CHUNK_SIZE, WINDOW_SIZE
 from lib.commands import Command, CommandResponse, MessageOption
 from lib.handshake import ThreeWayHandShake
-
-from lib.rdt.rdt_sw_socket import RdtSWSocket, RdtSWSocketClient, TimeOutErrors
+from lib.rdt.rdt_sw_socket import RdtSWSocketClient
 
 
 def main():
@@ -24,9 +23,9 @@ def main():
         None
     """
     try:
-            
+
         args = parser.parse_arguments("download")
-        
+
         selective_repeat = args.selective_repeat
         if not parser_utils.verify_params(args, "download"):
             print("❌ Error: missing required argument(s) ❌")
@@ -42,20 +41,47 @@ def main():
                 event = Event()
                 server_addr = ("127.0.0.1", 6000)
                 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                data_queue = queue.Queue()  
-                protocol = SelectiveRepeatRDT(WINDOW_SIZE, data_queue,sock, server_addr)
-                threading.Thread(target=parser_utils.poll_socket, args=(sock, data_queue,event,protocol.get_event())).start()
-                
-                print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
-                download_file(None, protocol, args.dst, args.name, args.verbose, args.host, args.port,event)
+                data_queue = queue.Queue()
+                protocol = SelectiveRepeatRDT(
+                    WINDOW_SIZE, data_queue, sock, server_addr
+                )
+                threading.Thread(
+                    target=parser_utils.poll_socket,
+                    args=(sock, data_queue, event, protocol.get_event()),
+                ).start()
+
+                print(
+                    f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}"
+                )
+                download_file(
+                    None,
+                    protocol,
+                    args.dst,
+                    args.name,
+                    args.verbose,
+                    args.host,
+                    args.port,
+                    event,
+                )
                 protocol.close_connection()
             else:
                 client_socket = RdtSWSocketClient()
-                print(f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}")
-                download_file(client_socket,None, args.dst, args.name, args.verbose, args.host, args.port,None)
+                print(
+                    f"💾 📥 Downloading {args.name} from {args.host}:{args.port} to {args.dst}"
+                )
+                download_file(
+                    client_socket,
+                    None,
+                    args.dst,
+                    args.name,
+                    args.verbose,
+                    args.host,
+                    args.port,
+                    None,
+                )
                 client_socket.close()
         except TimeoutError:
-            close_connections(client_socket,protocol,event)
+            close_connections(client_socket, protocol, event)
             print("❌ Connection Timeout Error ❌")
             return
 
@@ -66,8 +92,16 @@ def main():
         quit()
 
 
-
-def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, verbose: bool, host: str, port: int, event):
+def download_file(
+    socketSW: RdtSWSocketClient,
+    socketSR,
+    dest: str,
+    name: str,
+    verbose: bool,
+    host: str,
+    port: int,
+    event,
+):
     """
     Download a file from a server using a UDP socket connection.
 
@@ -88,10 +122,12 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
         return
 
     command = Command(MessageOption.DOWNLOAD, name, 0)
-    try: 
+    try:
         if socketSW is not None:
             three_way_handshake = ThreeWayHandShake(socketSW)
-            response = three_way_handshake.send_download(command.to_str(),(host,port),True).decode()
+            response = three_way_handshake.send_download(
+                command.to_str(), (host, port), True
+            ).decode()
         else:
             socketSR.send_message(command.to_str().encode())
             response = socketSR.receive_message().decode()
@@ -105,7 +141,7 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
     command = CommandResponse(response)
     print("-> Server response: ", response)
     if command.is_error():
-        print(f"❌ Request rejected -> {command._msg} ❌") 
+        print(f"❌ Request rejected -> {command._msg} ❌")
         quit()
 
     if verbose:
@@ -118,7 +154,7 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
         print("❌ Download canceled ❌")
         response = CommandResponse.err_response("ERR Download canceled").to_str()
         if socketSW is not None:
-            socketSW._internal_socket.sendto(response.encode(), (host, port)) 
+            socketSW._internal_socket.sendto(response.encode(), (host, port))
         else:
             socketSR.send_message(response.encode())
         return
@@ -127,11 +163,13 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
     if socketSW is not None:
 
         try:
-            first_data,addr = three_way_handshake.send_download(response,(host,port),False)
+            first_data, addr = three_way_handshake.send_download(
+                response, (host, port), False
+            )
 
         except TimeoutError:
             print("❌ Connection lost due to multiple tries ❌")
-            return 
+            return
     else:
         socketSR.send_message(response.encode())
     if verbose:
@@ -140,20 +178,22 @@ def download_file(socketSW: RdtSWSocketClient,socketSR, dest: str, name: str, ve
     try:
 
         if socketSW is not None:
-            fs_handler.download_file(socketSW,socketSR, dest, size, Event(),first_data,addr)
+            fs_handler.download_file(
+                socketSW, socketSR, dest, size, Event(), first_data, addr
+            )
         else:
-            fs_handler.download_file(socketSW,socketSR, dest, size, Event(), None, None)
+            fs_handler.download_file(
+                socketSW, socketSR, dest, size, Event(), None, None
+            )
     except TimeoutError:
         print("❌ Connection lost due to multiple tries ❌")
         return
-
 
     if verbose:
         print(f"✔ File {name} downloaded successfully ✔")
 
 
-
-def close_connections(socketSW: RdtSWSocketClient,socketSR,event):
+def close_connections(socketSW: RdtSWSocketClient, socketSR, event):
     if socketSW is not None:
         socketSW.close()
     else:

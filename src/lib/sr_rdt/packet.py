@@ -1,4 +1,3 @@
-
 class Packet:
     def __init__(self, seq_num, data):
         """
@@ -12,7 +11,7 @@ class Packet:
         self.data = data  # Store the data payload
         self.timer = None  # Timer for timeout handling
         self.timeouts = 0  # Number of timeouts experienced by the packet
-    
+
     def into_bytes(self):
         """
         Convert the Packet object into a byte representation.
@@ -20,8 +19,11 @@ class Packet:
         Returns:
             bytes: Byte representation of the packet.
         """
-        return self.seq_num.to_bytes(4, byteorder='big') + self.data  # Convert seq_num to 4-byte big-endian format and concatenate with data
-    
+        return (
+            self.seq_num.to_bytes(4, byteorder="big") + self.data
+        )  # Convert seq_num to 4-byte big-endian format
+           # and concatenate with data
+
     @staticmethod
     def from_bytes(bytes):
         """
@@ -33,9 +35,13 @@ class Packet:
         Returns:
             Packet: The reconstructed Packet object.
         """
-        seq_num = int.from_bytes(bytes[:4], byteorder='big')  # Extract sequence number from first 4 bytes
+        seq_num = int.from_bytes(
+            bytes[:4], byteorder="big"
+        )  # Extract sequence number from first 4 bytes
         data = bytes[4:]  # Extract data payload from remaining bytes
-        return Packet(seq_num, data)  # Create and return a new Packet object with extracted values
+        return Packet(
+            seq_num, data
+        )  # Create and return a new Packet object with extracted values
 
     def is_ack(self):
         """
@@ -54,7 +60,7 @@ class Packet:
             bytes: Data payload of the packet.
         """
         return self.data  # Return the data payload
-    
+
     def get_seqnum(self):
         """
         Get the sequence number of the packet.

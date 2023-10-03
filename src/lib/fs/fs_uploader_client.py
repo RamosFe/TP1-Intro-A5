@@ -1,8 +1,6 @@
 import os
 import math
 from alive_progress import alive_bar
-from lib.rdt.rdt_sw_socket import RdtSWSocketClient
-from lib.sr_rdt.selective_repeat import SelectiveRepeatRDT
 
 
 class FileSystemUploaderClient:
@@ -23,6 +21,7 @@ class FileSystemUploaderClient:
             Upload a file to a server.
 
     """
+
     def __init__(self, chunk_size: int):
         self._chunk_size = chunk_size
 
@@ -38,8 +37,10 @@ class FileSystemUploaderClient:
         """
         return os.path.getsize(path)
 
-    def upload_file(self, senderSW, senderSR, addr: str, path: str, name: str, verbose: bool):
-
+    def upload_file(
+        self, senderSW, senderSR, addr: str, path: str, name: str,
+        verbose: bool
+    ):
         """
         Upload a file to a server.
 
@@ -48,18 +49,21 @@ class FileSystemUploaderClient:
             addr: The address of the server.
             path (str): The path to the file to be uploaded.
             name (str): The name of the file being uploaded.
-            verbose (bool): If True, print verbose information about the upload.
+            verbose (bool): If True, print verbose information
+            about the upload.
 
         Note:
             The upload process continues until the entire file is sent.
         """
-        
-    # Open the file in binary mode for reading
+
+        # Open the file in binary mode for reading
         with open(path, "rb") as file:
-            # Calculate the number of progress steps based on chunk size and file size
+            # Calculate the number of progress steps based
+            # on chunk size and file size
             steps = math.ceil(self.get_file_size(path) / self._chunk_size)
 
-            # Print information about the file being uploaded if verbose is True
+            # Print information about the file being uploaded if
+            # verbose is True
             if verbose:
                 print(f"-> Uploading file {name}")
 
@@ -77,7 +81,7 @@ class FileSystemUploaderClient:
 
                     except TimeoutError:
                         raise TimeoutError
-                    
+
                     # Update the progress bar
                     bar()
 
