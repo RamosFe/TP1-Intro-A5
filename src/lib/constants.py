@@ -21,6 +21,7 @@ HARCODED_BUFFER_SIZE_FOR_FILE = 8000
 
 # Size of the packet headers, is 1 on S&W
 PACKET_HEADER_SIZE = 1
+
 # Buffer size for socket communication
 HARDCODED_BUFFER_SIZE = HARDCODED_CHUNK_SIZE + PACKET_HEADER_SIZE
 
